@@ -1,0 +1,21 @@
+"name": "OmniFlow — Executive Sales CRM",
+  "short_name": "OmniFlow",
+  "description": "Executive Business Casual mobile sales CRM and focus command center.",
+  "start_url": "./",
+  "id": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#121316",
+  "theme_color": "#121316",
+  "scope": "./",
+  "lang": "en-US",
+  "categories": ["productivity", "business"],
+  "icons": [
+    {
+      "src": "./icon-512x512.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
