@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <radialGradient id="businessBg" cx="50%" cy="40%" r="65%">
+      <stop offset="0%" stop-color="#1e2026"/>
+      <stop offset="60%" stop-color="#121316"/>
+      <stop offset="100%" stop-color="#0a0b0d"/>
+    </radialGradient>
+    <linearGradient id="goldGradient" x1="0%" x2="100%" y1="0%" y2="100%">
+      <stop offset="0%" stop-color="#fdf3c7"/>
+      <stop offset="30%" stop-color="#d4af37"/>
+      <stop offset="70%" stop-color="#aa8620"/>
+      <stop offset="100%" stop-color="#f59e0b"/>
+    </linearGradient>
+    <linearGradient id="metallicRim" x1="0%" x2="0%" y1="0%" y2="100%">
+      <stop offset="0%" stop-color="rgba(212, 175, 55, 0.45)"/>
+      <stop offset="50%" stop-color="rgba(255, 255, 255, 0.08)"/>
+      <stop offset="100%" stop-color="rgba(212, 175, 55, 0.25)"/>
+    </linearGradient>
+    <filter id="goldGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="10" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="url(#businessBg)"/>
+  <rect width="504" height="504" x="4" y="4" rx="108" fill="none" stroke="url(#metallicRim)" stroke-width="2.5"/>
+  <circle cx="256" cy="256" r="162" fill="none" stroke="rgba(212, 175, 55, 0.15)" stroke-width="1.5" stroke-dasharray="4 8"/>
+  <circle cx="256" cy="256" r="136" fill="none" stroke="rgba(255, 255, 255, 0.06)" stroke-width="1.5"/>
+  <g filter="url(#goldGlow)">
+    <circle cx="176" cy="256" r="28" fill="#1b1b1f" stroke="url(#goldGradient)" stroke-width="7"/>
+    <circle cx="176" cy="256" r="11" fill="url(#goldGradient)"/>
+    <circle cx="336" cy="256" r="28" fill="#1b1b1f" stroke="url(#goldGradient)" stroke-width="7"/>
+    <circle cx="336" cy="256" r="11" fill="url(#goldGradient)"/>
+    <path d="M 176 256 C 215 195, 298 316, 336 256" fill="none" stroke="url(#goldGradient)" stroke-width="12" stroke-linecap="round"/>
+    <path d="M 336 256 C 298 195, 215 316, 176 256" fill="none" stroke="#fef3c7" stroke-width="6" stroke-linecap="round" opacity="0.85"/>
+  </g>
+  <g opacity="0.9" transform="translate(0, 72)">
+    <line x1="208" y1="300" x2="208" y2="330" stroke="#d4af37" stroke-width="5" stroke-linecap="round"/>
+    <line x1="228" y1="288" x2="228" y2="342" stroke="#d4af37" stroke-width="5" stroke-linecap="round"/>
+    <line x1="248" y1="276" x2="248" y2="354" stroke="#fdf3c7" stroke-width="5" stroke-linecap="round"/>
+    <line x1="264" y1="272" x2="264" y2="358" stroke="#fdf3c7" stroke-width="5" stroke-linecap="round"/>
+    <line x1="284" y1="284" x2="284" y2="346" stroke="#d4af37" stroke-width="5" stroke-linecap="round"/>
+    <line x1="304" y1="300" x2="304" y2="330" stroke="#aa8620" stroke-width="5" stroke-linecap="round"/>
+  </g>
+</svg>
