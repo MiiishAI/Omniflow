@@ -123,6 +123,11 @@
       }
       .secondary { background: rgba(255,255,255,0.04); }
       .danger { background: rgba(239,68,68,0.12); color: #fecaca; }
+      .main {
+        padding: 24px;
+        overflow-y: auto;
+        max-height: calc(100vh - 80px);
+      }
       .screen {
         display: none;
       }
@@ -160,6 +165,7 @@
         color: var(--muted);
         display: block;
         margin-bottom: 6px;
+        font-size: 0.85rem;
       }
       .big {
         font-size: 1.7rem;
@@ -181,27 +187,64 @@
       }
       .task-item {
         display: flex;
-        align-items: center;
+        align-items: flex-start;
         justify-content: space-between;
         gap: 12px;
         background: rgba(255,255,255,0.03);
         border: 1px solid var(--border);
         border-radius: 12px;
-        padding: 12px 14px;
+        padding: 14px;
+        transition: background 0.2s ease;
+        cursor: pointer;
+      }
+      .task-item:hover {
+        background: rgba(255,255,255,0.05);
       }
       .task-item.left {
         display: flex;
-        align-items: center;
+        align-items: flex-start;
         gap: 12px;
         flex: 1;
       }
       .task-item input[type="checkbox"] {
         width: 18px;
         height: 18px;
+        margin-top: 2px;
+        flex-shrink: 0;
       }
-      .task-item.done .title {
+      .task-content {
+        flex: 1;
+      }
+      .task-title {
+        font-weight: 500;
+        margin-bottom: 4px;
+      }
+      .task-description {
+        font-size: 0.85rem;
+        color: var(--muted);
+        margin-bottom: 8px;
+        line-height: 1.4;
+      }
+      .task-item.done .task-title {
         text-decoration: line-through;
         color: var(--muted);
+      }
+      .task-item.done .task-description {
+        color: #6b7280;
+      }
+      .subtask-count {
+        font-size: 0.75rem;
+        color: var(--gold);
+        font-weight: 600;
+      }
+      .task-actions {
+        display: flex;
+        gap: 8px;
+        flex-shrink: 0;
+      }
+      .task-actions button {
+        padding: 6px 12px;
+        font-size: 0.85rem;
       }
       .row {
         display: flex;
@@ -219,14 +262,20 @@
       .field label {
         color: var(--muted);
         font-size: 0.9rem;
+        font-weight: 500;
       }
-      input, select {
+      input, textarea, select {
         width: 100%;
         background: rgba(255,255,255,0.04);
         color: var(--text);
         border: 1px solid var(--border);
         border-radius: 10px;
         padding: 11px 12px;
+        font-family: inherit;
+      }
+      textarea {
+        resize: vertical;
+        min-height: 80px;
       }
       .modal {
         position: fixed;
@@ -236,6 +285,7 @@
         align-items: center;
         justify-content: center;
         padding: 20px;
+        z-index: 50;
       }
       .modal.visible { display: flex; }
       .modal-card {
@@ -244,6 +294,8 @@
         border: 1px solid var(--border);
         border-radius: 18px;
         padding: 22px;
+        max-height: 90vh;
+        overflow-y: auto;
       }
       .hidden { display: none; }
       .timer-box {
@@ -256,9 +308,64 @@
       .material-symbols-outlined {
         font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
       }
+      .task-detail-modal {
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.7);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        z-index: 51;
+      }
+      .task-detail-modal.visible { display: flex; }
+      .task-detail-card {
+        width: min(100%, 600px);
+        background: #1b1d22;
+        border: 1px solid var(--border);
+        border-radius: 18px;
+        padding: 22px;
+        max-height: 90vh;
+        overflow-y: auto;
+      }
+      .subtask-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        background: rgba(255,255,255,0.02);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 10px 12px;
+        margin-bottom: 8px;
+      }
+      .subtask-item input[type="checkbox"] {
+        width: 16px;
+        height: 16px;
+        flex-shrink: 0;
+      }
+      .subtask-item.done {
+        opacity: 0.6;
+      }
+      .subtask-item.done .subtask-text {
+        text-decoration: line-through;
+        color: var(--muted);
+      }
+      .subtask-text {
+        flex: 1;
+        font-size: 0.9rem;
+      }
+      .subtask-delete {
+        background: none;
+        border: none;
+        color: var(--muted);
+        cursor: pointer;
+        padding: 4px 8px;
+        font-size: 0.85rem;
+      }
       @media (max-width: 700px) {
         body { padding: 0; }
         .topbar { flex-direction: column; align-items: stretch; }
+        .main { padding: 16px; }
       }
     </style>
   </head>
@@ -267,7 +374,7 @@
     <div class="app">
       <header class="topbar">
         <div class="brand">
-          <div class="avatar">O</div>
+          <div class="avatar" id="userAvatarInitials">O</div>
           <div>
             <div>OmniFlow</div>
             <small id="userTitleText">Executive Command Center</small>
@@ -354,6 +461,7 @@
       </main>
     </div>
 
+    <!-- Add/Edit Item Modal -->
     <div id="addModal" class="modal" aria-hidden="true">
       <div class="modal-card">
         <div class="row" style="justify-content: space-between; align-items: center; margin-bottom: 16px;">
@@ -365,6 +473,10 @@
           <div class="field">
             <label for="newTaskTitle">Task Title</label>
             <input id="newTaskTitle" type="text" placeholder="e.g. Review legal agreement" />
+          </div>
+          <div class="field" style="margin-top: 12px;">
+            <label for="newTaskDescription">Task Description (Optional)</label>
+            <textarea id="newTaskDescription" placeholder="Add any specifics or notes about this task..."></textarea>
           </div>
         </div>
 
@@ -390,14 +502,49 @@
       </div>
     </div>
 
-    <script>
-      const STORAGE_KEYS = {
-        user: 'omniflow_user',
-        tasks: 'omniflow_tasks',
-        deals: 'omniflow_deals',
-        audio: 'omniflow_audio_enabled'
-      };
+    <!-- Task Detail Modal (View & Edit Subtasks) -->
+    <div id="taskDetailModal" class="task-detail-modal" aria-hidden="true">
+      <div class="task-detail-card">
+        <div class="row" style="justify-content: space-between; align-items: center; margin-bottom: 16px;">
+          <h3 style="margin: 0;">Task Details</h3>
+          <button class="secondary" type="button" id="closeTaskDetailBtn">Close</button>
+        </div>
 
+        <div id="taskDetailContent">
+          <div class="field">
+            <label>Title</label>
+            <div id="detailTaskTitle" style="padding: 11px 12px; background: rgba(255,255,255,0.04); border: 1px solid var(--border); border-radius: 10px; font-weight: 500;"></div>
+          </div>
+          
+          <div class="field" style="margin-top: 12px;">
+            <label>Description</label>
+            <div id="detailTaskDescription" style="padding: 11px 12px; background: rgba(255,255,255,0.04); border: 1px solid var(--border); border-radius: 10px; font-size: 0.9rem; color: var(--muted); line-height: 1.4; min-height: 60px;"></div>
+          </div>
+
+          <div style="margin-top: 16px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+              <label style="margin: 0; color: var(--muted); font-weight: 500;">Subtasks</label>
+              <button class="secondary" type="button" id="addSubtaskBtn" style="padding: 6px 12px; font-size: 0.85rem;">+ Add Subtask</button>
+            </div>
+            <div id="subtasksList" style="background: rgba(255,255,255,0.01); border: 1px solid var(--border); border-radius: 10px; padding: 12px;"></div>
+          </div>
+
+          <div id="newSubtaskField" class="hidden" style="margin-top: 12px;">
+            <div style="display: flex; gap: 8px;">
+              <input id="newSubtaskInput" type="text" placeholder="Enter subtask..." style="flex: 1;" />
+              <button class="primary" type="button" id="saveSubtaskBtn" style="padding: 8px 12px; font-size: 0.85rem;">Add</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="row" style="margin-top: 20px; justify-content: flex-end;">
+          <button class="secondary" type="button" id="deleteTaskDetailBtn">Delete Task</button>
+          <button class="primary" type="button" id="closeTaskDetailBtnBottom">Done</button>
+        </div>
+      </div>
+    </div>
+
+    <script>
       const defaultState = {
         user: { name: '', title: 'Executive Command Center' },
         tasks: [],
@@ -411,6 +558,7 @@
 
       let appState = loadState();
       let timerInterval = null;
+      let currentTaskDetailId = null;
 
       function loadState() {
         try {
@@ -451,6 +599,9 @@
         }
 
         document.getElementById('userTitleText').textContent = title;
+
+        const initials = name ? name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() : 'OF';
+        document.getElementById('userAvatarInitials').textContent = initials;
       }
 
       function renderTasks() {
@@ -460,15 +611,27 @@
           return;
         }
 
-        list.innerHTML = appState.tasks.map(task => `
-          <li class="task-item ${task.completed ? 'done' : ''}">
-            <div class="task-item left">
-              <input type="checkbox" ${task.completed ? 'checked' : ''} data-task-toggle="${task.id}" />
-              <span class="title">${task.title}</span>
-            </div>
-            <button class="danger" type="button" data-task-delete="${task.id}">Delete</button>
-          </li>
-        `).join('');
+        list.innerHTML = appState.tasks.map(task => {
+          const subtaskCount = (task.subtasks || []).length;
+          const completedSubtasks = (task.subtasks || []).filter(s => s.completed).length;
+          const subtaskInfo = subtaskCount > 0 ? `<div class="subtask-count">${completedSubtasks}/${subtaskCount} subtasks</div>` : '';
+          
+          return `
+            <li class="task-item ${task.completed ? 'done' : ''}" onclick="openTaskDetail(${task.id})">
+              <div class="task-item left">
+                <input type="checkbox" ${task.completed ? 'checked' : ''} data-task-toggle="${task.id}" onclick="event.stopPropagation(); toggleTask(${task.id})" />
+                <div class="task-content">
+                  <div class="task-title">${task.title}</div>
+                  ${task.description ? `<div class="task-description">${task.description}</div>` : ''}
+                  ${subtaskInfo}
+                </div>
+              </div>
+              <div class="task-actions">
+                <button class="danger" type="button" onclick="event.stopPropagation(); deleteTask(${task.id})">Delete</button>
+              </div>
+            </li>
+          `;
+        }).join('');
       }
 
       function renderPipeline() {
@@ -519,7 +682,7 @@
         const taskFields = document.getElementById('taskFields');
         const dealFields = document.getElementById('dealFields');
 
-        modalTitle.textContent = type === 'deal' ? 'Add Deal' : 'Add New Item';
+        modalTitle.textContent = type === 'deal' ? 'Add Deal' : 'Add New Task';
         taskFields.classList.toggle('hidden', type === 'deal');
         dealFields.classList.toggle('hidden', type === 'task');
         modal.classList.add('visible');
@@ -545,11 +708,20 @@
           appState.deals.push({ id: Date.now(), company, value, probability });
         } else {
           const title = document.getElementById('newTaskTitle').value.trim();
+          const description = document.getElementById('newTaskDescription').value.trim();
+          
           if (!title) {
             alert('Please enter a task title.');
             return;
           }
-          appState.tasks.push({ id: Date.now(), title, completed: false });
+          
+          appState.tasks.push({ 
+            id: Date.now(), 
+            title, 
+            description, 
+            completed: false,
+            subtasks: []
+          });
         }
 
         saveState();
@@ -560,6 +732,7 @@
 
       function clearModalFields() {
         document.getElementById('newTaskTitle').value = '';
+        document.getElementById('newTaskDescription').value = '';
         document.getElementById('newDealCompany').value = '';
         document.getElementById('newDealValue').value = '';
         document.getElementById('newDealProb').value = '';
@@ -577,6 +750,100 @@
         appState.tasks = appState.tasks.filter(task => task.id !== taskId);
         saveState();
         renderAll();
+      }
+
+      function openTaskDetail(taskId) {
+        currentTaskDetailId = taskId;
+        const task = appState.tasks.find(t => t.id === taskId);
+        if (!task) return;
+
+        document.getElementById('detailTaskTitle').textContent = task.title;
+        document.getElementById('detailTaskDescription').textContent = task.description || '(No description provided)';
+
+        renderSubtasks();
+
+        const modal = document.getElementById('taskDetailModal');
+        modal.classList.add('visible');
+        modal.setAttribute('aria-hidden', 'false');
+      }
+
+      function closeTaskDetail() {
+        document.getElementById('taskDetailModal').classList.remove('visible');
+        document.getElementById('taskDetailModal').setAttribute('aria-hidden', 'true');
+        currentTaskDetailId = null;
+      }
+
+      function renderSubtasks() {
+        if (!currentTaskDetailId) return;
+        const task = appState.tasks.find(t => t.id === currentTaskDetailId);
+        if (!task) return;
+
+        const subtasksList = document.getElementById('subtasksList');
+        const subtasks = task.subtasks || [];
+
+        if (!subtasks.length) {
+          subtasksList.innerHTML = '<p style="color: var(--muted); font-size: 0.9rem; margin: 0;">No subtasks yet. Click "+ Add Subtask" to create one.</p>';
+          return;
+        }
+
+        subtasksList.innerHTML = subtasks.map(subtask => `
+          <div class="subtask-item ${subtask.completed ? 'done' : ''}">
+            <input type="checkbox" ${subtask.completed ? 'checked' : ''} onchange="toggleSubtask(${currentTaskDetailId}, ${subtask.id})">
+            <span class="subtask-text">${subtask.text}</span>
+            <button class="subtask-delete" onclick="deleteSubtask(${currentTaskDetailId}, ${subtask.id})">✕</button>
+          </div>
+        `).join('');
+      }
+
+      function toggleAddSubtask() {
+        const field = document.getElementById('newSubtaskField');
+        field.classList.toggle('hidden');
+        if (!field.classList.contains('hidden')) {
+          document.getElementById('newSubtaskInput').focus();
+        }
+      }
+
+      function saveSubtask() {
+        if (!currentTaskDetailId) return;
+        const input = document.getElementById('newSubtaskInput');
+        const subtaskText = input.value.trim();
+
+        if (!subtaskText) {
+          alert('Please enter a subtask.');
+          return;
+        }
+
+        const task = appState.tasks.find(t => t.id === currentTaskDetailId);
+        if (!task) return;
+
+        if (!task.subtasks) task.subtasks = [];
+        task.subtasks.push({ id: Date.now(), text: subtaskText, completed: false });
+
+        input.value = '';
+        document.getElementById('newSubtaskField').classList.add('hidden');
+        saveState();
+        renderSubtasks();
+      }
+
+      function toggleSubtask(taskId, subtaskId) {
+        const task = appState.tasks.find(t => t.id === taskId);
+        if (!task || !task.subtasks) return;
+
+        const subtask = task.subtasks.find(s => s.id === subtaskId);
+        if (subtask) {
+          subtask.completed = !subtask.completed;
+          saveState();
+          renderSubtasks();
+        }
+      }
+
+      function deleteSubtask(taskId, subtaskId) {
+        const task = appState.tasks.find(t => t.id === taskId);
+        if (!task || !task.subtasks) return;
+
+        task.subtasks = task.subtasks.filter(s => s.id !== subtaskId);
+        saveState();
+        renderSubtasks();
       }
 
       function saveProfile() {
@@ -670,16 +937,19 @@
         document.getElementById('submitModalBtn').addEventListener('click', submitModal);
         document.getElementById('saveProfileBtn').addEventListener('click', saveProfile);
 
-        document.addEventListener('click', (event) => {
-          const toggleTarget = event.target.closest('[data-task-toggle]');
-          if (toggleTarget) {
-            toggleTask(Number(toggleTarget.dataset.taskToggle));
+        document.getElementById('closeTaskDetailBtn').addEventListener('click', closeTaskDetail);
+        document.getElementById('closeTaskDetailBtnBottom').addEventListener('click', closeTaskDetail);
+        document.getElementById('addSubtaskBtn').addEventListener('click', toggleAddSubtask);
+        document.getElementById('saveSubtaskBtn').addEventListener('click', saveSubtask);
+        document.getElementById('deleteTaskDetailBtn').addEventListener('click', () => {
+          if (currentTaskDetailId) {
+            deleteTask(currentTaskDetailId);
+            closeTaskDetail();
           }
+        });
 
-          const deleteTarget = event.target.closest('[data-task-delete]');
-          if (deleteTarget) {
-            deleteTask(Number(deleteTarget.dataset.taskDelete));
-          }
+        document.getElementById('newSubtaskInput').addEventListener('keypress', (e) => {
+          if (e.key === 'Enter') saveSubtask();
         });
       });
     </script>
