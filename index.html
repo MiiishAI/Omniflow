@@ -165,7 +165,6 @@
         color: var(--muted);
         display: block;
         margin-bottom: 6px;
-        font-size: 0.85rem;
       }
       .big {
         font-size: 1.7rem;
@@ -362,6 +361,27 @@
         padding: 4px 8px;
         font-size: 0.85rem;
       }
+      .priority-badge {
+        display: inline-block;
+        padding: 4px 8px;
+        border-radius: 999px;
+        font-size: 0.7rem;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+      }
+      .priority-low { background: rgba(34,197,94,0.12); color: #86efac; border: 1px solid rgba(34,197,94,0.35); }
+      .priority-medium { background: rgba(250,204,21,0.12); color: #fcd34d; border: 1px solid rgba(250,204,21,0.35); }
+      .priority-high { background: rgba(248,113,113,0.12); color: #fca5a5; border: 1px solid rgba(248,113,113,0.35); }
+      .priority-critical { background: rgba(244,63,94,0.15); color: #fda4af; border: 1px solid rgba(244,63,94,0.35); }
+      .search-input {
+        width: 100%;
+        background: rgba(255,255,255,0.04);
+        color: var(--text);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 10px 12px;
+        margin-bottom: 12px;
+      }
       @media (max-width: 700px) {
         body { padding: 0; }
         .topbar { flex-direction: column; align-items: stretch; }
@@ -428,6 +448,7 @@
             <button class="primary" type="button" id="openTaskModalBtn">Add New Task</button>
           </div>
           <div class="panel">
+            <input type="text" id="taskSearchInput" class="search-input" placeholder="Search tasks..." />
             <ul id="taskList" class="task-list"></ul>
           </div>
         </section>
@@ -461,7 +482,6 @@
       </main>
     </div>
 
-    <!-- Add/Edit Item Modal -->
     <div id="addModal" class="modal" aria-hidden="true">
       <div class="modal-card">
         <div class="row" style="justify-content: space-between; align-items: center; margin-bottom: 16px;">
@@ -477,6 +497,19 @@
           <div class="field" style="margin-top: 12px;">
             <label for="newTaskDescription">Task Description (Optional)</label>
             <textarea id="newTaskDescription" placeholder="Add any specifics or notes about this task..."></textarea>
+          </div>
+          <div class="field" style="margin-top: 12px;">
+            <label for="newTaskPriority">Priority</label>
+            <select id="newTaskPriority">
+              <option value="low">Low</option>
+              <option value="medium" selected>Medium</option>
+              <option value="high">High</option>
+              <option value="critical">Critical</option>
+            </select>
+          </div>
+          <div class="field" style="margin-top: 12px;">
+            <label for="newTaskDueDate">Due Date</label>
+            <input id="newTaskDueDate" type="date" />
           </div>
         </div>
 
@@ -502,7 +535,6 @@
       </div>
     </div>
 
-    <!-- Task Detail Modal (View & Edit Subtasks) -->
     <div id="taskDetailModal" class="task-detail-modal" aria-hidden="true">
       <div class="task-detail-card">
         <div class="row" style="justify-content: space-between; align-items: center; margin-bottom: 16px;">
@@ -515,7 +547,17 @@
             <label>Title</label>
             <div id="detailTaskTitle" style="padding: 11px 12px; background: rgba(255,255,255,0.04); border: 1px solid var(--border); border-radius: 10px; font-weight: 500;"></div>
           </div>
-          
+
+          <div class="field" style="margin-top: 12px;">
+            <label>Priority</label>
+            <div id="detailTaskPriority" style="padding: 11px 12px; background: rgba(255,255,255,0.04); border: 1px solid var(--border); border-radius: 10px;"></div>
+          </div>
+
+          <div class="field" style="margin-top: 12px;">
+            <label>Due Date</label>
+            <div id="detailTaskDueDate" style="padding: 11px 12px; background: rgba(255,255,255,0.04); border: 1px solid var(--border); border-radius: 10px; color: var(--muted);"></div>
+          </div>
+
           <div class="field" style="margin-top: 12px;">
             <label>Description</label>
             <div id="detailTaskDescription" style="padding: 11px 12px; background: rgba(255,255,255,0.04); border: 1px solid var(--border); border-radius: 10px; font-size: 0.9rem; color: var(--muted); line-height: 1.4; min-height: 60px;"></div>
@@ -553,7 +595,8 @@
         timerRunning: false,
         activeTab: 'overview',
         audioEnabled: true,
-        modalType: 'task'
+        modalType: 'task',
+        searchQuery: ''
       };
 
       let appState = loadState();
@@ -579,11 +622,26 @@
         localStorage.setItem('omniflow_state', JSON.stringify(appState));
       }
 
+      function formatDueDate(dateString) {
+        if (!dateString) return 'No due date';
+        const date = new Date(dateString + 'T00:00:00');
+        if (Number.isNaN(date.getTime())) return 'No due date';
+        return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+      }
+
       function formatTime(totalSeconds) {
         const hours = String(Math.floor(totalSeconds / 3600)).padStart(2, '0');
         const minutes = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, '0');
         const seconds = String(totalSeconds % 60).padStart(2, '0');
         return `${hours}:${minutes}:${seconds}`;
+      }
+
+      function getPriorityLabel(priority) {
+        return (priority || 'medium').charAt(0).toUpperCase() + (priority || 'medium').slice(1);
+      }
+
+      function getPriorityClass(priority) {
+        return `priority-${priority || 'medium'}`;
       }
 
       function renderGreeting() {
@@ -599,23 +657,35 @@
         }
 
         document.getElementById('userTitleText').textContent = title;
-
         const initials = name ? name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() : 'OF';
         document.getElementById('userAvatarInitials').textContent = initials;
       }
 
+      function getFilteredTasks() {
+        const query = (appState.searchQuery || '').trim().toLowerCase();
+        if (!query) return appState.tasks;
+        return appState.tasks.filter(task => {
+          const searchable = [task.title, task.description, task.priority, task.dueDate].join(' ').toLowerCase();
+          return searchable.includes(query);
+        });
+      }
+
       function renderTasks() {
         const list = document.getElementById('taskList');
-        if (!appState.tasks.length) {
-          list.innerHTML = '<li class="panel" style="padding: 16px; color: var(--muted);">No tasks currently tracked.</li>';
+        const filteredTasks = getFilteredTasks();
+
+        if (!filteredTasks.length) {
+          list.innerHTML = '<li class="panel" style="padding: 16px; color: var(--muted);">No tasks match your search.</li>';
           return;
         }
 
-        list.innerHTML = appState.tasks.map(task => {
+        list.innerHTML = filteredTasks.map(task => {
           const subtaskCount = (task.subtasks || []).length;
           const completedSubtasks = (task.subtasks || []).filter(s => s.completed).length;
           const subtaskInfo = subtaskCount > 0 ? `<div class="subtask-count">${completedSubtasks}/${subtaskCount} subtasks</div>` : '';
-          
+          const dueDate = task.dueDate ? `<div style="font-size: 0.72rem; color: var(--muted); margin-top: 6px;">Due: ${formatDueDate(task.dueDate)}</div>` : '';
+          const priorityBadge = `<span class="priority-badge ${getPriorityClass(task.priority)}">${getPriorityLabel(task.priority)}</span>`;
+
           return `
             <li class="task-item ${task.completed ? 'done' : ''}" onclick="openTaskDetail(${task.id})">
               <div class="task-item left">
@@ -623,6 +693,10 @@
                 <div class="task-content">
                   <div class="task-title">${task.title}</div>
                   ${task.description ? `<div class="task-description">${task.description}</div>` : ''}
+                  <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; flex-wrap:wrap;">
+                    ${priorityBadge}
+                    ${dueDate}
+                  </div>
                   ${subtaskInfo}
                 </div>
               </div>
@@ -709,16 +783,20 @@
         } else {
           const title = document.getElementById('newTaskTitle').value.trim();
           const description = document.getElementById('newTaskDescription').value.trim();
-          
+          const priority = document.getElementById('newTaskPriority').value || 'medium';
+          const dueDate = document.getElementById('newTaskDueDate').value || '';
+
           if (!title) {
             alert('Please enter a task title.');
             return;
           }
-          
-          appState.tasks.push({ 
-            id: Date.now(), 
-            title, 
-            description, 
+
+          appState.tasks.push({
+            id: Date.now(),
+            title,
+            description,
+            priority,
+            dueDate,
             completed: false,
             subtasks: []
           });
@@ -733,6 +811,8 @@
       function clearModalFields() {
         document.getElementById('newTaskTitle').value = '';
         document.getElementById('newTaskDescription').value = '';
+        document.getElementById('newTaskPriority').value = 'medium';
+        document.getElementById('newTaskDueDate').value = '';
         document.getElementById('newDealCompany').value = '';
         document.getElementById('newDealValue').value = '';
         document.getElementById('newDealProb').value = '';
@@ -748,6 +828,7 @@
 
       function deleteTask(taskId) {
         appState.tasks = appState.tasks.filter(task => task.id !== taskId);
+        if (currentTaskDetailId === taskId) closeTaskDetail();
         saveState();
         renderAll();
       }
@@ -758,6 +839,8 @@
         if (!task) return;
 
         document.getElementById('detailTaskTitle').textContent = task.title;
+        document.getElementById('detailTaskPriority').innerHTML = `<span class="priority-badge ${getPriorityClass(task.priority)}">${getPriorityLabel(task.priority)}</span>`;
+        document.getElementById('detailTaskDueDate').textContent = task.dueDate ? formatDueDate(task.dueDate) : 'No due date';
         document.getElementById('detailTaskDescription').textContent = task.description || '(No description provided)';
 
         renderSubtasks();
@@ -823,6 +906,7 @@
         document.getElementById('newSubtaskField').classList.add('hidden');
         saveState();
         renderSubtasks();
+        renderAll();
       }
 
       function toggleSubtask(taskId, subtaskId) {
@@ -834,6 +918,7 @@
           subtask.completed = !subtask.completed;
           saveState();
           renderSubtasks();
+          renderAll();
         }
       }
 
@@ -844,6 +929,7 @@
         task.subtasks = task.subtasks.filter(s => s.id !== subtaskId);
         saveState();
         renderSubtasks();
+        renderAll();
       }
 
       function saveProfile() {
@@ -946,6 +1032,11 @@
             deleteTask(currentTaskDetailId);
             closeTaskDetail();
           }
+        });
+
+        document.getElementById('taskSearchInput').addEventListener('input', (event) => {
+          appState.searchQuery = event.target.value;
+          renderTasks();
         });
 
         document.getElementById('newSubtaskInput').addEventListener('keypress', (e) => {
