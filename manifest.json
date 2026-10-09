@@ -1,4 +1,5 @@
-"name": "OmniFlow — Executive Sales CRM",
+{
+  "name": "OmniFlow — Executive Sales CRM",
   "short_name": "OmniFlow",
   "description": "Executive Business Casual mobile sales CRM and focus command center.",
   "start_url": "./",

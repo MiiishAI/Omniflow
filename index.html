@@ -1,1 +1,650 @@
-<!DOCTYPE html> <html lang="en" class="dark"> <head> <meta charset="UTF-8"> <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"> <title>OmniFlow — Executive Command Center</title> <!-- Progressive Web App Settings --> <link rel="manifest" href="./manifest.json"> <meta name="theme-color" content="#121316"> <meta name="apple-mobile-web-app-capable" content="yes"> <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"> <link rel="icon" type="image/svg+xml" href="./icon-512x512.svg"> <link rel="apple-touch-icon" href="./icon-512x512.svg"> <!-- Tailwind CSS & Web Fonts --> <script src="https://cdn.tailwindcss.com"></script> <link rel="preconnect" href="https://fonts.googleapis.com"> <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin> <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" rel="stylesheet"> <script> tailwind.config = { darkMode: 'class', theme: { extend: { colors: { surface: '#121316', 'surface-card': '#1b1b1f', 'surface-bright': '#26272c', gold: '#d4af37', 'gold-light': '#fdf3c7', 'gold-border': 'rgba(212, 175, 55, 0.22)' }, fontFamily: { sans: ['"Plus Jakarta Sans"', 'sans-serif'] } } } } </script> <style> body { background-color: #121316; color: #f3f4f6; font-family: 'Plus Jakarta Sans', sans-serif; -webkit-tap-highlight-color: transparent; user-select: none; } .pb-safe { padding-bottom: env(safe-area-inset-bottom, 24px); } .screen-view { display: none; } .screen-view.active { display: block; animation: fadeIn 0.2s ease-out; } @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } } </style> </head> <body class="min-h-screen flex flex-col justify-between max-w-md mx-auto relative border-x border-white/5 pb-24 shadow-2xl bg-surface"> <!-- Top Executive Header --> <header class="sticky top-0 z-40 bg-surface/90 backdrop-blur-md px-5 py-3.5 flex items-center justify-between border-b border-gold-border"> <div class="flex items-center gap-3"> <div id="userAvatarInitials" class="w-9 h-9 rounded-full bg-surface-card border border-gold/40 flex items-center justify-center text-gold font-bold text-sm shadow-sm transition-transform active:scale-95 cursor-pointer" onclick="switchTab('settings')"> OF </div> <div> <h1 class="text-base font-bold tracking-tight text-white flex items-center gap-1.5"> OmniFlow <span class="text-[10px] font-semibold text-gold bg-gold/10 px-1.5 py-0.5 rounded border border-gold/30">EXEC</span> </h1> <p class="text-[11px] text-gray-400" id="headerSubtitle">Executive Command Center</p> </div> </div> <div class="flex items-center gap-2"> <button onclick="playChime()" title="Test Acoustic Chime" class="w-8 h-8 rounded-full bg-surface-card hover:bg-surface-bright border border-white/10 flex items-center justify-center text-gold transition active:scale-90"> <span class="material-symbols-outlined text-[18px]">volume_up</span> </button> <button onclick="switchTab('settings')" class="w-8 h-8 rounded-full bg-surface-card border border-white/10 flex items-center justify-center text-gray-300 hover:text-white transition"> <span class="material-symbols-outlined text-[18px]">manage_accounts</span> </button> </div> </header> <!-- ========================================== --> <!-- VIEW 1: OVERVIEW (HOME COMMAND CENTER) --> <!-- ========================================== --> <main id="view-overview" class="screen-view active px-4 py-4 space-y-4 flex-1 overflow-y-auto"> <!-- Greeting & Customizer Prompt --> <div class="bg-surface-card p-4 rounded-2xl border border-gold-border relative overflow-hidden"> <div class="flex items-center justify-between mb-2"> <span class="text-[11px] font-medium text-gold uppercase tracking-wider flex items-center gap-1"> <span class="w-1.5 h-1.5 rounded-full bg-gold animate-pulse"></span> System Initialized </span> <span class="text-[11px] text-gray-400 bg-white/5 px-2 py-0.5 rounded-full" id="cycleStatus">Setup Pending</span> </div> <h2 class="text-xl font-extrabold text-white" id="greetingHeading">Welcome to OmniFlow</h2> <p class="text-xs text-gray-400 mt-0.5" id="greetingSub">Enter your name in Settings to personalize your command center.</p> <!-- Metrics Overview --> <div class="grid grid-cols-2 gap-3 mt-4 pt-3 border-t border-white/10"> <div> <span class="text-[11px] text-gray-400">Weighted Pipeline</span> <div class="text-xl font-bold text-gold" id="overviewPipelineVal">$0.0M</div> <span class="text-[10px] text-gray-400" id="overviewActiveDeals">0 Active Deals</span> </div> <div> <span class="text-[11px] text-gray-400">Critical Path Tasks</span> <div class="text-xl font-bold text-white" id="overviewTaskCount">0 / 0</div> <span class="text-[10px] text-gray-400">No tasks registered</span> </div> </div> </div> <!-- Active Focus Stopwatch --> <div class="bg-surface-card p-4 rounded-2xl border border-white/10 relative"> <div class="flex items-center justify-between mb-2"> <span class="text-xs font-semibold text-white flex items-center gap-1.5"> <span class="material-symbols-outlined text-[16px] text-gold">timer</span> Focus Session </span> <span class="text-[10px] text-gold bg-gold/10 px-2 py-0.5 rounded-full font-medium border border-gold/30">Standard Sprint</span> </div> <div class="text-center py-2"> <div id="timerDisplay" class="text-4xl font-extrabold tracking-wider text-gold font-mono">01:45:00</div> <p class="text-[11px] text-gray-400 mt-1">Operational Sprint Block</p> </div> <div class="flex gap-2 mt-3"> <button id="toggleTimerBtn" onclick="toggleTimer()" class="flex-1 py-2.5 rounded-xl bg-gold text-surface font-bold text-xs flex items-center justify-center gap-1.5 active:scale-95 transition shadow-lg shadow-gold/20"> <span class="material-symbols-outlined text-[16px]" id="timerBtnIcon">play_arrow</span> <span id="timerBtnText">Start Session</span> </button> <button onclick="resetTimer()" class="px-4 py-2.5 rounded-xl bg-surface-bright text-gray-300 font-semibold text-xs border border-white/10 active:scale-95 transition"> Reset </button> </div> </div> <!-- Operational Quick Checklist Preview --> <div class="bg-surface-card p-4 rounded-2xl border border-white/10"> <div class="flex items-center justify-between mb-3"> <h3 class="text-xs font-bold uppercase tracking-wider text-gray-300">Critical Path Checklist</h3> <button onclick="switchTab('tasks')" class="text-[11px] text-gold font-medium hover:underline flex items-center gap-0.5"> View All <span class="material-symbols-outlined text-[14px]">arrow_forward</span> </button> </div> <div class="space-y-2.5" id="homeChecklistContainer"> <div class="text-center py-4 text-xs text-gray-500 border border-dashed border-white/10 rounded-xl"> No tasks currently tracked.<br> <button onclick="openAddModal('task')" class="text-gold mt-1.5 font-semibold hover:underline">Add your first task</button> </div> </div> </div> <!-- Active Deal Card --> <div class="bg-surface-card p-4 rounded-2xl border border-gold-border"> <div class="flex items-center justify-between text-[11px] mb-1.5"> <span class="text-gold font-semibold uppercase tracking-wider">Top Priority Deal</span> <span class="text-gray-400 font-bold" id="leadDealProbability">None</span> </div> <div id="homeDealContainer"> <div class="text-center py-4 text-xs text-gray-500"> No active pipeline deals found. <div class="mt-2"> <button onclick="openAddModal('deal')" class="px-3 py-1.5 bg-surface-bright border border-gold/40 text-gold rounded-lg font-bold text-[11px]"> + Register First Deal </button> </div> </div> </div> </div> </main> <!-- ========================================== --> <!-- VIEW 2: TASKS HUB --> <!-- ========================================== --> <main id="view-tasks" class="screen-view px-4 py-4 space-y-4 flex-1 overflow-y-auto"> <div class="flex items-center justify-between"> <div> <h2 class="text-lg font-bold text-white">Executive Tasks Hub</h2> <p class="text-xs text-gray-400">High-priority operational action items.</p> </div> <button onclick="openAddModal('task')" class="px-3 py-1.5 bg-gold text-surface font-bold text-xs rounded-xl flex items-center gap-1 active:scale-95 shadow-md shadow-gold/20"> <span class="material-symbols-outlined text-[16px]">add</span> New Task </button> </div> <!-- Task List --> <div class="bg-surface-card p-4 rounded-2xl border border-white/10 space-y-3"> <div class="flex items-center justify-between border-b border-white/5 pb-2 text-xs"> <span class="font-bold uppercase text-gray-300">Action Items</span> <span class="text-gold font-medium" id="tasksTabCount">0 Items</span> </div> <div class="space-y-2.5" id="fullTaskList"> <!-- Rendered via JS --> </div> </div> </main> <!-- ========================================== --> <!-- VIEW 3: OPPORTUNITIES PIPELINE --> <!-- ========================================== --> <main id="view-pipeline" class="screen-view px-4 py-4 space-y-4 flex-1 overflow-y-auto"> <div class="flex items-center justify-between"> <div> <h2 class="text-lg font-bold text-white">Deal Terminal</h2> <p class="text-xs text-gray-400">Enterprise sales & pipeline velocity.</p> </div> <button onclick="openAddModal('deal')" class="px-3 py-1.5 bg-gold text-surface font-bold text-xs rounded-xl flex items-center gap-1 active:scale-95 shadow-md shadow-gold/20"> <span class="material-symbols-outlined text-[16px]">add</span> New Deal </button> </div> <div class="grid grid-cols-2 gap-3"> <div class="bg-surface-card p-3 rounded-xl border border-gold-border"> <span class="text-[10px] text-gray-400">Total Pipeline</span> <div class="text-lg font-bold text-gold" id="pipelineSummaryTotal">$0.0M</div> </div> <div class="bg-surface-card p-3 rounded-xl border border-white/10"> <span class="text-[10px] text-gray-400">Active Deals</span> <div class="text-lg font-bold text-white" id="pipelineSummaryCount">0</div> </div> </div> <!-- Deals Listing --> <div class="space-y-3" id="dealCardsList"> <!-- Rendered via JS --> </div> </main> <!-- ========================================== --> <!-- VIEW 4: SETTINGS & PROFILE --> <!-- ========================================== --> <main id="view-settings" class="screen-view px-4 py-4 space-y-4 flex-1 overflow-y-auto"> <div> <h2 class="text-lg font-bold text-white">Settings & Profile</h2> <p class="text-xs text-gray-400">Personalize your name and app preferences.</p> </div> <!-- Profile Personalization Card --> <div class="bg-surface-card p-4 rounded-2xl border border-gold-border space-y-3"> <h3 class="text-xs font-bold uppercase tracking-wider text-gold">Executive Identity</h3> <div> <label class="block text-xs text-gray-300 font-medium mb-1">Your Full Name</label> <input type="text" id="userNameInput" placeholder="e.g. Sarah Jenkins" class="w-full bg-surface-bright border border-white/15 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-gold"> </div> <div> <label class="block text-xs text-gray-300 font-medium mb-1">Organization / Title</label> <input type="text" id="userTitleInput" placeholder="e.g. Managing Director" class="w-full bg-surface-bright border border-white/15 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-gold"> </div> <button onclick="saveUserProfile()" class="w-full py-2.5 rounded-xl bg-gold text-surface font-bold text-xs flex items-center justify-center gap-1 active:scale-95 transition shadow-lg shadow-gold/20"> <span class="material-symbols-outlined text-[16px]">save</span> Save Profile </button> </div> <!-- Preferences --> <div class="bg-surface-card p-4 rounded-2xl border border-white/10 space-y-3 text-xs"> <h3 class="font-bold uppercase tracking-wider text-gray-300">Preferences</h3> <div class="flex items-center justify-between py-2 border-b border-white/5"> <div> <span class="font-medium text-white block">Acoustic Audio Feedback</span> <span class="text-[11px] text-gray-400">Play warm brass chimes and metallic ticks</span> </div> <input type="checkbox" id="prefAudioToggle" checked onchange="toggleAudioPref(this.checked)" class="accent-[#d4af37] w-4 h-4 rounded"> </div> <div class="flex items-center justify-between py-2"> <div> <span class="font-medium text-white block">Active Theme</span> <span class="text-[11px] text-gray-400">Executive Business Casual (Default)</span> </div> <span class="text-gold font-bold text-[11px]">ACTIVE</span> </div> </div> <!-- Data Reset --> <div class="bg-surface-card p-4 rounded-2xl border border-red-500/20 text-xs"> <h3 class="font-bold uppercase tracking-wider text-red-400 mb-1">System Reset</h3> <p class="text-gray-400 text-[11px] mb-3">Clear all custom data and restore to fresh onboarding state.</p> <button onclick="resetAllData()" class="w-full py-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 font-bold rounded-xl active:scale-95 transition"> Reset to Initial Clean State </button> </div> </main> <!-- ========================================== --> <!-- QUICK ADD MODAL (TASKS & DEALS) --> <!-- ========================================== --> <div id="addModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4"> <div class="bg-surface-card w-full max-w-md rounded-t-3xl sm:rounded-3xl border border-gold-border p-5 space-y-4 animate-in"> <div class="flex items-center justify-between"> <h3 class="text-base font-bold text-white flex items-center gap-1.5" id="modalTitle"> <span class="material-symbols-outlined text-gold">add_circle</span> Add New Item </h3> <button onclick="closeAddModal()" class="w-7 h-7 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-gray-400"> <span class="material-symbols-outlined text-[18px]">close</span> </button> </div> <div class="flex gap-2 p-1 bg-surface-bright rounded-xl"> <button id="modalTabTask" onclick="setModalType('task')" class="flex-1 py-1.5 rounded-lg text-xs font-bold bg-gold text-surface transition">Task</button> <button id="modalTabDeal" onclick="setModalType('deal')" class="flex-1 py-1.5 rounded-lg text-xs font-semibold text-gray-300 transition">Deal</button> </div> <!-- Task Form Fields --> <div id="modalTaskFields" class="space-y-3"> <div> <label class="block text-xs text-gray-300 mb-1">Task Title</label> <input type="text" id="newTaskTitle" placeholder="e.g. Review legal agreement" class="w-full bg-surface-bright border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-gold"> </div> </div> <!-- Deal Form Fields --> <div id="modalDealFields" class="space-y-3 hidden"> <div> <label class="block text-xs text-gray-300 mb-1">Company / Client Name</label> <input type="text" id="newDealCompany" placeholder="e.g. Apex Corporation" class="w-full bg-surface-bright border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-gold"> </div> <div class="grid grid-cols-2 gap-2"> <div> <label class="block text-xs text-gray-300 mb-1">Value ($)</label> <input type="text" id="newDealValue" placeholder="e.g. $250k" class="w-full bg-surface-bright border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-gold"> </div> <div> <label class="block text-xs text-gray-300 mb-1">Probability (%)</label> <input type="text" id="newDealProb" placeholder="e.g. 75%" class="w-full bg-surface-bright border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-gold"> </div> </div> </div> <div class="flex gap-2 pt-2"> <button onclick="closeAddModal()" class="flex-1 py-2.5 bg-surface-bright text-gray-300 font-bold text-xs rounded-xl border border-white/10">Cancel</button> <button onclick="submitModalItem()" class="flex-1 py-2.5 bg-gold text-surface font-extrabold text-xs rounded-xl shadow-lg shadow-gold/25 active:scale-95 transition">Save Item</button> </div> </div> </div> <!-- Docked Bottom Navigation Bar --> <nav class="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-surface/95 backdrop-blur-xl border-t border-gold-border px-4 py-2 pb-safe flex justify-around items-center z-40"> <button id="nav-btn-overview" onclick="switchTab('overview')" class="flex flex-col items-center gap-0.5 text-gold font-bold text-[10px] transition-colors"> <span class="material-symbols-outlined text-[20px]">dashboard</span> <span>Overview</span> </button> <button id="nav-btn-tasks" onclick="switchTab('tasks')" class="flex flex-col items-center gap-0.5 text-gray-400 hover:text-white text-[10px] transition-colors"> <span class="material-symbols-outlined text-[20px]">checklist</span> <span>Tasks</span> </button> <button onclick="openAddModal('task')" class="w-10 h-10 rounded-full bg-gold text-surface flex items-center justify-center -mt-4 shadow-lg shadow-gold/30 active:scale-90 transition" title="Add item"> <span class="material-symbols-outlined text-[22px] font-bold">add</span> </button> <button id="nav-btn-pipeline" onclick="switchTab('pipeline')" class="flex flex-col items-center gap-0.5 text-gray-400 hover:text-white text-[10px] transition-colors"> <span class="material-symbols-outlined text-[20px]">timeline</span> <span>Pipeline</span> </button> <button id="nav-btn-settings" onclick="switchTab('settings')" class="flex flex-col items-center gap-0.5 text-gray-400 hover:text-white text-[10px] transition-colors"> <span class="material-symbols-outlined text-[20px]">settings</span> <span>Settings</span> </button> </nav> <!-- Core Interactive Script --> <script> // State storage with localStorage persistence let appState = { user: { name: localStorage.getItem('of_name') || '', title: localStorage.getItem('of_title') || '' }, tasks: JSON.parse(localStorage.getItem('of_tasks') || '[]'), deals: JSON.parse(localStorage.getItem('of_deals') || '[]'), audioEnabled: localStorage.getItem('of_audio') !== 'false' }; // TAB NAVIGATION CONTROLLER function switchTab(tabId) { playTick(); document.querySelectorAll('.screen-view').forEach(view => view.classList.remove('active')); const activeView = document.getElementById(`view-${tabId}`); if (activeView) activeView.classList.add('active'); // Update Nav active styling ['overview', 'tasks', 'pipeline', 'settings'].forEach(id => { const btn = document.getElementById(`nav-btn-${id}`); if (btn) { if (id === tabId) { btn.className = "flex flex-col items-center gap-0.5 text-gold font-bold text-[10px] transition-colors"; } else { btn.className = "flex flex-col items-center gap-0.5 text-gray-400 hover:text-white text-[10px] transition-colors"; } } }); window.scrollTo({ top: 0, behavior: 'smooth' }); } // USER PROFILE PERSONALIZATION function saveUserProfile() { const name = document.getElementById('userNameInput').value.trim(); const title = document.getElementById('userTitleInput').value.trim(); appState.user.name = name; appState.user.title = title; localStorage.setItem('of_name', name); localStorage.setItem('of_title', title); renderUI(); playChime(); alert('✓ Profile updated successfully!'); switchTab('overview'); } function toggleAudioPref(val) { appState.audioEnabled = val; localStorage.setItem('of_audio', val); if (val) playChime(); } // MODAL ADD CONTROLLER let currentModalType = 'task'; function openAddModal(type) { playTick(); currentModalType = type; setModalType(type); document.getElementById('addModal').classList.remove('hidden'); } function closeAddModal() { playTick(); document.getElementById('addModal').classList.add('hidden'); } function setModalType(type) { currentModalType = type; const taskBtn = document.getElementById('modalTabTask'); const dealBtn = document.getElementById('modalTabDeal'); const taskFields = document.getElementById('modalTaskFields'); const dealFields = document.getElementById('modalDealFields'); if (type === 'task') { taskBtn.className = "flex-1 py-1.5 rounded-lg text-xs font-bold bg-gold text-surface transition"; dealBtn.className = "flex-1 py-1.5 rounded-lg text-xs font-semibold text-gray-300 transition"; taskFields.classList.remove('hidden'); dealFields.classList.add('hidden'); } else { dealBtn.className = "flex-1 py-1.5 rounded-lg text-xs font-bold bg-gold text-surface transition"; taskBtn.className = "flex-1 py-1.5 rounded-lg text-xs font-semibold text-gray-300 transition"; dealFields.classList.remove('hidden'); taskFields.classList.add('hidden'); } } function submitModalItem() { if (currentModalType === 'task') { const title = document.getElementById('newTaskTitle').value.trim(); if (!title) return alert('Please enter a task title'); appState.tasks.push({ id: Date.now(), title: title, completed: false }); localStorage.setItem('of_tasks', JSON.stringify(appState.tasks)); document.getElementById('newTaskTitle').value = ''; } else { const company = document.getElementById('newDealCompany').value.trim(); const value = document.getElementById('newDealValue').value.trim() || '$100k'; const prob = document.getElementById('newDealProb').value.trim() || '50%'; if (!company) return alert('Please enter a company name'); appState.deals.push({ id: Date.now(), company: company, value: value, probability: prob }); localStorage.setItem('of_deals', JSON.stringify(appState.deals)); document.getElementById('newDealCompany').value = ''; document.getElementById('newDealValue').value = ''; document.getElementById('newDealProb').value = ''; } playChime(); closeAddModal(); renderUI(); } // TASK TOGGLE & DELETE function toggleTask(id) { playTick(); appState.tasks = appState.tasks.map(t => t.id === id ? { ...t, completed: !t.completed } : t); localStorage.setItem('of_tasks', JSON.stringify(appState.tasks)); renderUI(); } function deleteTask(id, e) { e.stopPropagation(); playTick(); appState.tasks = appState.tasks.filter(t => t.id !== id); localStorage.setItem('of_tasks', JSON.stringify(appState.tasks)); renderUI(); } // RESET TO FRESH STATE function resetAllData() { if (confirm('Are you sure you want to reset all data and clear stored names?')) { localStorage.clear(); appState = { user: { name: '', title: '' }, tasks: [], deals: [], audioEnabled: true }; renderUI(); alert('✓ OmniFlow reset to fresh state.'); switchTab('overview'); } } // RENDER DATA & REACTIVE UI function renderUI() { // 1. User Header & Greeting const name = appState.user.name; const initials = name ? name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() : 'OF'; document.getElementById('userAvatarInitials').textContent = initials; if (name) { document.getElementById('greetingHeading').textContent = `Good day, ${name}`; document.getElementById('greetingSub').textContent = appState.user.title || 'Executive Command Active'; document.getElementById('cycleStatus').textContent = 'Live Session'; } else { document.getElementById('greetingHeading').textContent = 'Welcome to OmniFlow'; document.getElementById('greetingSub').textContent = 'Enter your name in Settings to personalize your command center.'; document.getElementById('cycleStatus').textContent = 'Setup Pending'; } // Settings inputs mirror state document.getElementById('userNameInput').value = appState.user.name; document.getElementById('userTitleInput').value = appState.user.title; document.getElementById('prefAudioToggle').checked = appState.audioEnabled; // 2. Tasks Rendering const totalTasks = appState.tasks.length; const clearedTasks = appState.tasks.filter(t => t.completed).length; document.getElementById('overviewTaskCount').textContent = `${clearedTasks} / ${totalTasks}`; document.getElementById('tasksTabCount').textContent = `${totalTasks} Items`; // Home Checklist const homeChecklist = document.getElementById('homeChecklistContainer'); if (appState.tasks.length === 0) { homeChecklist.innerHTML = ` <div class="text-center py-4 text-xs text-gray-500 border border-dashed border-white/10 rounded-xl"> No tasks currently tracked.<br> <button onclick="openAddModal('task')" class="text-gold mt-1.5 font-semibold hover:underline">+ Add your first task</button> </div>`; } else { homeChecklist.innerHTML = appState.tasks.slice(0, 3).map(task => ` <label class="flex items-center justify-between p-2.5 rounded-xl bg-surface-bright/50 border border-white/5 cursor-pointer"> <div class="flex items-center gap-2.5"> <input type="checkbox" ${task.completed ? 'checked' : ''} onchange="toggleTask(${task.id})" class="accent-[#d4af37] w-4 h-4 rounded"> <span class="text-xs ${task.completed ? 'line-through text-gray-400' : 'text-gray-200'}">${task.title}</span> </div> <button onclick="deleteTask(${task.id}, event)" class="text-gray-500 hover:text-red-400 text-xs">✕</button> </label> `).join(''); } // Full Task Tab const fullList = document.getElementById('fullTaskList'); if (appState.tasks.length === 0) { fullList.innerHTML = `<div class="text-center py-6 text-xs text-gray-500">Your task list is empty. Tap "+ New Task" above to add one.</div>`; } else { fullList.innerHTML = appState.tasks.map(task => ` <div class="flex items-center justify-between p-3 rounded-xl bg-surface-bright/50 border border-white/5"> <label class="flex items-center gap-3 cursor-pointer flex-1"> <input type="checkbox" ${task.completed ? 'checked' : ''} onchange="toggleTask(${task.id})" class="accent-[#d4af37] w-4 h-4 rounded"> <span class="text-xs ${task.completed ? 'line-through text-gray-400' : 'text-gray-200 font-medium'}">${task.title}</span> </label> <button onclick="deleteTask(${task.id}, event)" class="p-1 text-gray-500 hover:text-red-400"> <span class="material-symbols-outlined text-[16px]">delete</span> </button> </div> `).join(''); } // 3. Deals Rendering const totalDeals = appState.deals.length; document.getElementById('overviewActiveDeals').textContent = `${totalDeals} Active Deals`; document.getElementById('pipelineSummaryCount').textContent = totalDeals; const homeDealContainer = document.getElementById('homeDealContainer'); const dealCardsList = document.getElementById('dealCardsList'); if (totalDeals === 0) { document.getElementById('overviewPipelineVal').textContent = '$0.0M'; document.getElementById('pipelineSummaryTotal').textContent = '$0.0M'; document.getElementById('leadDealProbability').textContent = 'None'; homeDealContainer.innerHTML = ` <div class="text-center py-4 text-xs text-gray-500"> No active pipeline deals found. <div class="mt-2"> <button onclick="openAddModal('deal')" class="px-3 py-1.5 bg-surface-bright border border-gold/40 text-gold rounded-lg font-bold text-[11px]"> + Register First Deal </button> </div> </div>`; dealCardsList.innerHTML = ` <div class="bg-surface-card p-6 rounded-2xl border border-white/10 text-center text-xs text-gray-500"> No deals currently tracked. Tap "+ New Deal" to register one. </div>`; } else { const firstDeal = appState.deals[0]; document.getElementById('overviewPipelineVal').textContent = firstDeal.value; document.getElementById('pipelineSummaryTotal').textContent = firstDeal.value; document.getElementById('leadDealProbability').textContent = firstDeal.probability; homeDealContainer.innerHTML = ` <h3 class="text-base font-bold text-white">${firstDeal.company}</h3> <p class="text-xs text-gray-400">Target Enterprise Agreement</p> <div class="text-2xl font-black text-gold my-2">${firstDeal.value}</div> <button onclick="executeDeal('${firstDeal.company}')" class="w-full py-2.5 rounded-xl bg-gradient-to-r from-amber-400 to-[#d4af37] text-surface font-extrabold text-xs flex items-center justify-center gap-1.5 active:scale-95 transition shadow-lg shadow-gold/25"> <span class="material-symbols-outlined text-[16px]">verified</span> Execute Deal & Sign Protocol </button>`; dealCardsList.innerHTML = appState.deals.map(deal => ` <div class="bg-surface-card p-4 rounded-2xl border border-gold-border space-y-2"> <div class="flex justify-between items-center text-[11px]"> <span class="text-gold font-bold">${deal.probability} Win Probability</span> <span class="text-gray-400">Active Stage</span> </div> <h4 class="text-base font-bold text-white">${deal.company}</h4> <div class="text-xl font-black text-gold">${deal.value}</div> <button onclick="executeDeal('${deal.company}')" class="w-full py-2 bg-gold text-surface font-bold text-xs rounded-xl active:scale-95"> Execute Deal </button> </div> `).join(''); } } // STOPWATCH TIMER LOGIC let timerSeconds = 6300; // 01:45:00 let timerRunning = false; let timerInterval = null; function updateTimerDisplay() { const h = String(Math.floor(timerSeconds / 3600)).padStart(2, '0'); const m = String(Math.floor((timerSeconds % 3600) / 60)).padStart(2, '0'); const s = String(timerSeconds % 60).padStart(2, '0'); document.getElementById('timerDisplay').textContent = `${h}:${m}:${s}`; } function toggleTimer() { playTick(); if (timerRunning) { clearInterval(timerInterval); timerRunning = false; document.getElementById('timerBtnText').textContent = 'Resume Session'; document.getElementById('timerBtnIcon').textContent = 'play_arrow'; } else { timerRunning = true; document.getElementById('timerBtnText').textContent = 'Pause Session'; document.getElementById('timerBtnIcon').textContent = 'pause'; timerInterval = setInterval(() => { if (timerSeconds > 0) { timerSeconds--; updateTimerDisplay(); } else { clearInterval(timerInterval); timerRunning = false; playChime(); } }, 1000); } } function resetTimer() { playTick(); clearInterval(timerInterval); timerRunning = false; timerSeconds = 6300; updateTimerDisplay(); document.getElementById('timerBtnText').textContent = 'Start Session'; document.getElementById('timerBtnIcon').textContent = 'play_arrow'; } // BUILT-IN WEB AUDIO SYNTHESIS let audioCtx = null; function getAudioCtx() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); if (audioCtx.state === 'suspended') audioCtx.resume(); return audioCtx; } function playChime() { if (!appState.audioEnabled) return; try { const ctx = getAudioCtx(); const freqs = [587.33, 880.0, 1174.66]; // D5, A5, D6 warm brass triad const now = ctx.currentTime; freqs.forEach(f => { const osc = ctx.createOscillator(); const gain = ctx.createGain(); osc.type = 'sine'; osc.frequency.setValueAtTime(f, now); gain.gain.setValueAtTime(0.08, now); gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.35); osc.connect(gain); gain.connect(ctx.destination); osc.start(now); osc.stop(now + 0.4); }); if (navigator.vibrate) navigator.vibrate([15, 10, 20]); } catch(e) {} } function playTick() { if (!appState.audioEnabled) return; try { const ctx = getAudioCtx(); const now = ctx.currentTime; const osc = ctx.createOscillator(); const gain = ctx.createGain(); osc.type = 'triangle'; osc.frequency.setValueAtTime(2400, now); gain.gain.setValueAtTime(0.05, now); gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.02); osc.connect(gain); gain.connect(ctx.destination); osc.start(now); osc.stop(now + 0.03); if (navigator.vibrate) navigator.vibrate(6); } catch(e) {} } function executeDeal(name) { playChime(); alert(`🌟 Agreement for ${name || 'Deal'} successfully signed and recorded!`); } // Initial boot window.addEventListener('DOMContentLoaded', () => { renderUI(); updateTimerDisplay(); }); if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW note:', err)); }); } </script> </body> </html>
+<!DOCTYPE html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#121316" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <title>OmniFlow — Executive Command Center</title>
+    <link rel="manifest" href="./manifest.json" />
+    <style>
+      :root {
+        --bg: #121316;
+        --panel: #1b1d22;
+        --panel-alt: #22262d;
+        --border: rgba(255,255,255,0.12);
+        --text: #f3f4f6;
+        --muted: #9ca3af;
+        --gold: #d4af37;
+        --green: #22c55e;
+        --red: #ef4444;
+        --shadow: rgba(0,0,0,0.35);
+      }
+
+      * { box-sizing: border-box; }
+      html, body {
+        margin: 0;
+        min-height: 100%;
+        background: var(--bg);
+        color: var(--text);
+        font-family: Arial, sans-serif;
+      }
+      body {
+        display: flex;
+        justify-content: center;
+        padding: 24px;
+      }
+      .app {
+        width: min(100%, 1100px);
+        background: rgba(20, 22, 27, 0.85);
+        border: 1px solid var(--border);
+        border-radius: 22px;
+        box-shadow: 0 20px 50px var(--shadow);
+        overflow: hidden;
+      }
+      .topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 18px 24px;
+        background: rgba(27, 29, 34, 0.95);
+        border-bottom: 1px solid var(--border);
+      }
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-weight: 700;
+      }
+      .avatar {
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--gold), #7c5c10);
+        display: grid;
+        place-items: center;
+        font-weight: 700;
+      }
+      .nav {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+      button {
+        font: inherit;
+      }
+      .nav button, .primary, .secondary, .danger {
+        border: 1px solid var(--border);
+        background: var(--panel-alt);
+        color: var(--text);
+        border-radius: 12px;
+        padding: 10px 14px;
+        cursor: pointer;
+        transition: 0.2s ease;
+      }
+      .nav button.active, .primary {
+        background: linear-gradient(135deg, #d4af37, #8a6d1f);
+        color: #1a140d;
+        border-color: rgba(212,175,55,0.8);
+        font-weight: 700;
+      }
+      .secondary { background: rgba(255,255,255,0.04); }
+      .danger { background: rgba(239,68,68,0.12); color: #fecaca; }
+      .main {
+        padding: 24px;
+      }
+      .screen {
+        display: none;
+      }
+      .screen.active {
+        display: block;
+      }
+      .hero {
+        background: rgba(255,255,255,0.03);
+        border: 1px solid var(--border);
+        border-radius: 18px;
+        padding: 22px;
+        margin-bottom: 22px;
+      }
+      .hero h1 {
+        margin: 0 0 10px;
+        font-size: clamp(24px, 4vw, 36px);
+      }
+      .subtext {
+        color: var(--muted);
+        margin: 0;
+      }
+      .metrics {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 16px;
+        margin: 22px 0;
+      }
+      .metric {
+        background: rgba(255,255,255,0.03);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 16px;
+      }
+      .metric .label {
+        color: var(--muted);
+        display: block;
+        margin-bottom: 6px;
+      }
+      .big {
+        font-size: 1.7rem;
+        font-weight: 700;
+      }
+      .panel {
+        background: rgba(255,255,255,0.03);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 18px;
+        margin-top: 18px;
+      }
+      .task-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        display: grid;
+        gap: 12px;
+      }
+      .task-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        background: rgba(255,255,255,0.03);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 12px 14px;
+      }
+      .task-item.left {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex: 1;
+      }
+      .task-item input[type="checkbox"] {
+        width: 18px;
+        height: 18px;
+      }
+      .task-item.done .title {
+        text-decoration: line-through;
+        color: var(--muted);
+      }
+      .row {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        align-items: center;
+      }
+      .field {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        min-width: 220px;
+        flex: 1;
+      }
+      .field label {
+        color: var(--muted);
+        font-size: 0.9rem;
+      }
+      input, select {
+        width: 100%;
+        background: rgba(255,255,255,0.04);
+        color: var(--text);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 11px 12px;
+      }
+      .modal {
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.7);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+      }
+      .modal.visible { display: flex; }
+      .modal-card {
+        width: min(100%, 520px);
+        background: #1b1d22;
+        border: 1px solid var(--border);
+        border-radius: 18px;
+        padding: 22px;
+      }
+      .hidden { display: none; }
+      .timer-box {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 1.3rem;
+        font-weight: 700;
+      }
+      @media (max-width: 700px) {
+        body { padding: 12px; }
+        .topbar { flex-direction: column; align-items: stretch; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app">
+      <header class="topbar">
+        <div class="brand">
+          <div class="avatar">O</div>
+          <div>
+            <div>OmniFlow</div>
+            <small id="userTitleText">Executive Command Center</small>
+          </div>
+        </div>
+        <nav class="nav" aria-label="Main navigation">
+          <button class="active" data-tab="overview">Overview</button>
+          <button data-tab="tasks">Tasks</button>
+          <button data-tab="pipeline">Pipeline</button>
+          <button data-tab="settings">Settings</button>
+        </nav>
+      </header>
+
+      <main class="main">
+        <section id="overview" class="screen active">
+          <div class="hero">
+            <h1 id="greetingHeading">Welcome to OmniFlow</h1>
+            <p class="subtext" id="greetingSubtext">Enter your name in Settings to personalize your command center.</p>
+          </div>
+
+          <div class="metrics">
+            <div class="metric">
+              <span class="label">Weighted Pipeline</span>
+              <span class="big" id="pipelineValue">$0.0M</span>
+            </div>
+            <div class="metric">
+              <span class="label">Critical Path Tasks</span>
+              <span class="big" id="taskCount">0 / 0</span>
+            </div>
+            <div class="metric">
+              <span class="label">Focus Session</span>
+              <span class="big" id="timerDisplay">00:45:00</span>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="row" style="justify-content: space-between;">
+              <h3 style="margin: 0;">Focus Session</h3>
+              <button class="secondary" id="toggleTimerBtn" type="button">Start Session</button>
+            </div>
+            <div class="timer-box" style="margin-top: 12px;">
+              <button class="secondary" type="button" id="resetTimerBtn">Reset</button>
+            </div>
+          </div>
+        </section>
+
+        <section id="tasks" class="screen">
+          <div class="row" style="justify-content: space-between; margin-bottom: 16px;">
+            <h2 style="margin: 0;">Executive Tasks Hub</h2>
+            <button class="primary" type="button" id="openTaskModalBtn">Add New Task</button>
+          </div>
+          <div class="panel">
+            <ul id="taskList" class="task-list"></ul>
+          </div>
+        </section>
+
+        <section id="pipeline" class="screen">
+          <div class="row" style="justify-content: space-between; margin-bottom: 16px;">
+            <h2 style="margin: 0;">Deal Pipeline</h2>
+            <button class="primary" type="button" id="openDealModalBtn">New Deal</button>
+          </div>
+          <div class="panel">
+            <div id="pipelineSummary">No active pipeline deals found.</div>
+          </div>
+        </section>
+
+        <section id="settings" class="screen">
+          <div class="panel">
+            <h2 style="margin-top: 0;">Settings & Profile</h2>
+            <div class="field">
+              <label for="userNameInput">Your Full Name</label>
+              <input id="userNameInput" type="text" placeholder="e.g. Sarah Jenkins" />
+            </div>
+            <div class="field" style="margin-top: 12px;">
+              <label for="userTitleInput">Organization / Title</label>
+              <input id="userTitleInput" type="text" placeholder="e.g. Managing Director" />
+            </div>
+            <div style="margin-top: 16px;">
+              <button class="primary" type="button" id="saveProfileBtn">Save Profile</button>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <div id="addModal" class="modal" aria-hidden="true">
+      <div class="modal-card">
+        <div class="row" style="justify-content: space-between; align-items: center; margin-bottom: 16px;">
+          <h3 id="modalTitle" style="margin: 0;">Add New Item</h3>
+          <button class="secondary" type="button" id="closeAddModalBtn">Close</button>
+        </div>
+        <div id="taskFields">
+          <div class="field">
+            <label for="newTaskTitle">Task Title</label>
+            <input id="newTaskTitle" type="text" placeholder="e.g. Review legal agreement" />
+          </div>
+        </div>
+        <div id="dealFields" class="hidden">
+          <div class="field">
+            <label for="newDealCompany">Company / Client Name</label>
+            <input id="newDealCompany" type="text" placeholder="e.g. Apex Corporation" />
+          </div>
+          <div class="field" style="margin-top: 12px;">
+            <label for="newDealValue">Value ($)</label>
+            <input id="newDealValue" type="text" placeholder="e.g. $250k" />
+          </div>
+          <div class="field" style="margin-top: 12px;">
+            <label for="newDealProb">Probability (%)</label>
+            <input id="newDealProb" type="text" placeholder="e.g. 75%" />
+          </div>
+        </div>
+        <div class="row" style="margin-top: 20px; justify-content: flex-end;">
+          <button class="secondary" type="button" id="cancelAddBtn">Cancel</button>
+          <button class="primary" type="button" id="submitModalBtn">Save Item</button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const STORAGE_KEYS = {
+        user: 'omniflow_user',
+        tasks: 'omniflow_tasks',
+        deals: 'omniflow_deals',
+        audio: 'omniflow_audio_enabled'
+      };
+
+      const defaultState = {
+        user: { name: '', title: 'Executive Command Center' },
+        tasks: [],
+        deals: [],
+        timerSeconds: 45 * 60,
+        timerRunning: false,
+        activeTab: 'overview',
+        audioEnabled: true,
+        modalType: 'task'
+      };
+
+      let appState = loadState();
+      let timerInterval = null;
+
+      function loadState() {
+        try {
+          const stored = JSON.parse(localStorage.getItem('omniflow_state') || '{}');
+          return {
+            ...defaultState,
+            ...stored,
+            user: { ...defaultState.user, ...(stored.user || {}) },
+            tasks: Array.isArray(stored.tasks) ? stored.tasks : [],
+            deals: Array.isArray(stored.deals) ? stored.deals : []
+          };
+        } catch (error) {
+          return { ...defaultState };
+        }
+      }
+
+      function saveState() {
+        localStorage.setItem('omniflow_state', JSON.stringify(appState));
+      }
+
+      function formatTime(totalSeconds) {
+        const hours = String(Math.floor(totalSeconds / 3600)).padStart(2, '0');
+        const minutes = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, '0');
+        const seconds = String(totalSeconds % 60).padStart(2, '0');
+        return `${hours}:${minutes}:${seconds}`;
+      }
+
+      function renderGreeting() {
+        const name = appState.user.name?.trim();
+        const title = appState.user.title?.trim() || 'Executive Command Center';
+
+        if (name) {
+          document.getElementById('greetingHeading').textContent = `Good day, ${name}`;
+          document.getElementById('greetingSubtext').textContent = title;
+        } else {
+          document.getElementById('greetingHeading').textContent = 'Welcome to OmniFlow';
+          document.getElementById('greetingSubtext').textContent = 'Enter your name in Settings to personalize your command center.';
+        }
+
+        document.getElementById('userTitleText').textContent = title;
+      }
+
+      function renderTasks() {
+        const list = document.getElementById('taskList');
+        if (!appState.tasks.length) {
+          list.innerHTML = '<li class="panel" style="padding: 16px; color: var(--muted);">No tasks currently tracked.</li>';
+          return;
+        }
+
+        list.innerHTML = appState.tasks.map(task => `
+          <li class="task-item ${task.completed ? 'done' : ''}">
+            <div class="task-item left">
+              <input type="checkbox" ${task.completed ? 'checked' : ''} data-task-toggle="${task.id}" />
+              <span class="title">${task.title}</span>
+            </div>
+            <button class="danger" type="button" data-task-delete="${task.id}">Delete</button>
+          </li>
+        `).join('');
+      }
+
+      function renderPipeline() {
+        const summary = document.getElementById('pipelineSummary');
+        if (!appState.deals.length) {
+          summary.textContent = 'No active pipeline deals found.';
+          return;
+        }
+
+        const total = appState.deals.reduce((sum, deal) => sum + (Number(deal.value) || 0), 0);
+        summary.innerHTML = `
+          <div style="display: grid; gap: 12px;">
+            ${appState.deals.map(deal => `
+              <div class="task-item" style="align-items: center;">
+                <div>
+                  <strong>${deal.company}</strong><br>
+                  <small style="color: var(--muted);">${deal.probability}% probability</small>
+                </div>
+                <div style="font-weight: 700;">$${Number(deal.value).toLocaleString()}</div>
+              </div>
+            `).join('')}
+            <div style="font-weight: 700; color: var(--gold);">Total pipeline: $${total.toLocaleString()}</div>
+          </div>
+        `;
+      }
+
+      function renderTimer() {
+        document.getElementById('timerDisplay').textContent = formatTime(appState.timerSeconds);
+        const toggleButton = document.getElementById('toggleTimerBtn');
+        toggleButton.textContent = appState.timerRunning ? 'Pause Session' : 'Start Session';
+      }
+
+      function switchTab(tabName) {
+        appState.activeTab = tabName;
+        document.querySelectorAll('.nav button').forEach(btn => {
+          btn.classList.toggle('active', btn.dataset.tab === tabName);
+        });
+        document.querySelectorAll('.screen').forEach(screen => {
+          screen.classList.toggle('active', screen.id === tabName);
+        });
+        saveState();
+      }
+
+      function openModal(type) {
+        appState.modalType = type;
+        const modal = document.getElementById('addModal');
+        const modalTitle = document.getElementById('modalTitle');
+        const taskFields = document.getElementById('taskFields');
+        const dealFields = document.getElementById('dealFields');
+
+        modalTitle.textContent = type === 'deal' ? 'Add Deal' : 'Add New Item';
+        taskFields.classList.toggle('hidden', type === 'deal');
+        dealFields.classList.toggle('hidden', type === 'task');
+        modal.classList.add('visible');
+        modal.setAttribute('aria-hidden', 'false');
+      }
+
+      function closeModal() {
+        document.getElementById('addModal').classList.remove('visible');
+        document.getElementById('addModal').setAttribute('aria-hidden', 'true');
+      }
+
+      function submitModal() {
+        if (appState.modalType === 'deal') {
+          const company = document.getElementById('newDealCompany').value.trim();
+          const value = Number((document.getElementById('newDealValue').value || '0').replace(/[^0-9.-]/g, '')) || 0;
+          const probability = Number((document.getElementById('newDealProb').value || '0').replace(/[^0-9]/g, '')) || 0;
+
+          if (!company) {
+            alert('Please enter a company name.');
+            return;
+          }
+
+          appState.deals.push({ id: Date.now(), company, value, probability });
+        } else {
+          const title = document.getElementById('newTaskTitle').value.trim();
+          if (!title) {
+            alert('Please enter a task title.');
+            return;
+          }
+          appState.tasks.push({ id: Date.now(), title, completed: false });
+        }
+
+        saveState();
+        renderAll();
+        closeModal();
+        clearModalFields();
+      }
+
+      function clearModalFields() {
+        document.getElementById('newTaskTitle').value = '';
+        document.getElementById('newDealCompany').value = '';
+        document.getElementById('newDealValue').value = '';
+        document.getElementById('newDealProb').value = '';
+      }
+
+      function toggleTask(taskId) {
+        appState.tasks = appState.tasks.map(task =>
+          task.id === taskId ? { ...task, completed: !task.completed } : task
+        );
+        saveState();
+        renderAll();
+      }
+
+      function deleteTask(taskId) {
+        appState.tasks = appState.tasks.filter(task => task.id !== taskId);
+        saveState();
+        renderAll();
+      }
+
+      function saveProfile() {
+        appState.user.name = document.getElementById('userNameInput').value.trim();
+        appState.user.title = document.getElementById('userTitleInput').value.trim();
+        saveState();
+        renderGreeting();
+        switchTab('overview');
+      }
+
+      function startTimer() {
+        if (appState.timerRunning) return;
+        appState.timerRunning = true;
+        timerInterval = setInterval(() => {
+          if (appState.timerSeconds > 0) {
+            appState.timerSeconds -= 1;
+          } else {
+            clearInterval(timerInterval);
+            appState.timerRunning = false;
+          }
+          saveState();
+          renderTimer();
+        }, 1000);
+        renderTimer();
+      }
+
+      function stopTimer() {
+        appState.timerRunning = false;
+        if (timerInterval) {
+          clearInterval(timerInterval);
+          timerInterval = null;
+        }
+        renderTimer();
+      }
+
+      function resetTimer() {
+        stopTimer();
+        appState.timerSeconds = 45 * 60;
+        saveState();
+        renderTimer();
+      }
+
+      function renderSettingsForm() {
+        document.getElementById('userNameInput').value = appState.user.name || '';
+        document.getElementById('userTitleInput').value = appState.user.title || 'Executive Command Center';
+      }
+
+      function renderAll() {
+        renderGreeting();
+        renderSettingsForm();
+        renderTasks();
+        renderPipeline();
+        renderTimer();
+
+        const totalTasks = appState.tasks.length;
+        const completedTasks = appState.tasks.filter(task => task.completed).length;
+        document.getElementById('taskCount').textContent = `${completedTasks} / ${totalTasks}`;
+
+        const totalValue = appState.deals.reduce((sum, deal) => sum + (Number(deal.value) || 0), 0);
+        const millionValue = totalValue / 1000000;
+        document.getElementById('pipelineValue').textContent = `$${millionValue.toFixed(1)}M`;
+      }
+
+      function registerServiceWorker() {
+        if ('serviceWorker' in navigator) {
+          navigator.serviceWorker.register('./sw.js').catch(() => {});
+        }
+      }
+
+      document.addEventListener('DOMContentLoaded', () => {
+        renderAll();
+        registerServiceWorker();
+
+        document.querySelectorAll('.nav button').forEach(button => {
+          button.addEventListener('click', () => switchTab(button.dataset.tab));
+        });
+
+        document.getElementById('toggleTimerBtn').addEventListener('click', () => {
+          if (appState.timerRunning) {
+            stopTimer();
+          } else {
+            startTimer();
+          }
+        });
+
+        document.getElementById('resetTimerBtn').addEventListener('click', resetTimer);
+        document.getElementById('openTaskModalBtn').addEventListener('click', () => openModal('task'));
+        document.getElementById('openDealModalBtn').addEventListener('click', () => openModal('deal'));
+        document.getElementById('closeAddModalBtn').addEventListener('click', closeModal);
+        document.getElementById('cancelAddBtn').addEventListener('click', closeModal);
+        document.getElementById('submitModalBtn').addEventListener('click', submitModal);
+        document.getElementById('saveProfileBtn').addEventListener('click', saveProfile);
+
+        document.addEventListener('click', (event) => {
+          const toggleTarget = event.target.closest('[data-task-toggle]');
+          if (toggleTarget) {
+            toggleTask(Number(toggleTarget.dataset.taskToggle));
+          }
+
+          const deleteTarget = event.target.closest('[data-task-delete]');
+          if (deleteTarget) {
+            deleteTask(Number(deleteTarget.dataset.taskDelete));
+          }
+        });
+      });
+    </script>
+  </body>
+</html>
