@@ -1,1048 +1,1186 @@
 <!DOCTYPE html>
 <html lang="en" class="dark">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-    <meta name="theme-color" content="#121316" />
-    <meta name="mobile-web-app-capable" content="yes" />
-    <title>OmniFlow — Executive Command Center</title>
-    <link rel="manifest" href="./manifest.json" />
-    <link rel="icon" type="image/svg+xml" href="./icon-512x512.svg" />
-    <link rel="apple-touch-icon" href="./icon-512x512.svg" />
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>OmniFlow — Executive Command Center</title>
 
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" rel="stylesheet" />
+  <!-- PWA & Mobile Meta -->
+  <link rel="manifest" href="./manifest.json" />
+  <meta name="theme-color" content="#121316" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <link rel="icon" type="image/svg+xml" href="./icon-512x512.svg" />
+  <link rel="apple-touch-icon" href="./icon-512x512.svg" />
 
-    <script>
-      tailwind.config = {
-        darkMode: 'class',
-        theme: {
-          extend: {
-            colors: {
-              surface: '#121316',
-              'surface-card': '#1b1d22',
-              'surface-bright': '#262b2f',
-              gold: '#d4af37',
-              'gold-soft': '#fdf3c7',
-              'gold-border': 'rgba(212,175,55,0.22)'
-            },
-            fontFamily: {
-              sans: ['"Plus Jakarta Sans"', 'sans-serif']
-            }
+  <!-- Tailwind CSS & Fonts -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" rel="stylesheet" />
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            surface: '#121316',
+            'surface-card': '#1b1b1f',
+            'surface-bright': '#26272c',
+            gold: '#d4af37',
+            'gold-light': '#fdf3c7',
+            'gold-border': 'rgba(212, 175, 55, 0.22)'
+          },
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif']
           }
         }
       }
-    </script>
+    }
+  </script>
 
-    <style>
-      :root {
-        --bg: #121316;
-        --panel: #1b1d22;
-        --panel-alt: #242930;
-        --panel-soft: #2d3138;
-        --border: rgba(255,255,255,0.12);
-        --text: #f3f4f6;
-        --muted: #9ca3af;
-        --gold: #d4af37;
-        --gold-soft: #fdf3c7;
-      }
+  <style>
+    :root {
+      --bg: #121316;
+      --card: #1b1b1f;
+      --border: rgba(255, 255, 255, 0.08);
+      --gold: #d4af37;
+      --gold-border: rgba(212, 175, 55, 0.22);
+    }
+    * { box-sizing: border-box; }
+    body {
+      background-color: #121316;
+      color: #f3f4f6;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+      margin: 0;
+      padding: 0;
+    }
+    .pb-safe {
+      padding-bottom: env(safe-area-inset-bottom, 24px);
+    }
+    .screen-view {
+      display: none;
+    }
+    .screen-view.active {
+      display: block;
+      animation: fadeIn 0.2s ease-out;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(5px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    /* Custom luxury scrollbar */
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(212, 175, 55, 0.2); border-radius: 4px; }
+  </style>
+</head>
 
-      * { box-sizing: border-box; }
-      html, body {
-        margin: 0;
-        min-height: 100%;
-        background: var(--bg);
-        color: var(--text);
-        font-family: 'Plus Jakarta Sans', sans-serif;
-        -webkit-tap-highlight-color: transparent;
-        user-select: none;
-      }
-      body {
-        display: flex;
-        justify-content: center;
-        padding: 0;
-      }
-      .app {
-        width: min(100%, 1100px);
-        min-height: 100vh;
-        background: rgba(20, 22, 27, 0.85);
-        border-left: 1px solid var(--border);
-        border-right: 1px solid var(--border);
-        box-shadow: 0 20px 50px rgba(0,0,0,0.35);
-        overflow: hidden;
-      }
-      .topbar {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 12px;
-        padding: 18px 24px;
-        background: rgba(27, 29, 34, 0.95);
-        border-bottom: 1px solid var(--border);
-      }
-      .brand {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        font-weight: 700;
-      }
-      .avatar {
-        width: 38px;
-        height: 38px;
-        border-radius: 50%;
-        background: linear-gradient(135deg, var(--gold), #7c5c10);
-        display: grid;
-        place-items: center;
-        font-weight: 700;
-        border: 1px solid rgba(212,175,55,0.6);
-      }
-      .nav {
-        display: flex;
-        gap: 8px;
-        flex-wrap: wrap;
-      }
-      button {
-        font: inherit;
-      }
-      .nav button, .primary, .secondary, .danger {
-        border: 1px solid var(--border);
-        background: var(--panel-alt);
-        color: var(--text);
-        border-radius: 12px;
-        padding: 10px 14px;
-        cursor: pointer;
-        transition: 0.2s ease;
-      }
-      .nav button.active, .primary {
-        background: linear-gradient(135deg, #d4af37, #8a6d1f);
-        color: #1a140d;
-        border-color: rgba(212,175,55,0.8);
-        font-weight: 700;
-      }
-      .secondary { background: rgba(255,255,255,0.04); }
-      .danger { background: rgba(239,68,68,0.12); color: #fecaca; }
-      .main {
-        padding: 24px;
-        overflow-y: auto;
-        max-height: calc(100vh - 80px);
-      }
-      .screen {
-        display: none;
-      }
-      .screen.active {
-        display: block;
-      }
-      .hero {
-        background: rgba(255,255,255,0.03);
-        border: 1px solid var(--border);
-        border-radius: 18px;
-        padding: 22px;
-        margin-bottom: 22px;
-      }
-      .hero h1 {
-        margin: 0 0 10px;
-        font-size: clamp(24px, 4vw, 36px);
-      }
-      .subtext {
-        color: var(--muted);
-        margin: 0;
-      }
-      .metrics {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-        gap: 16px;
-        margin: 22px 0;
-      }
-      .metric {
-        background: rgba(255,255,255,0.03);
-        border: 1px solid var(--border);
-        border-radius: 16px;
-        padding: 16px;
-      }
-      .metric .label {
-        color: var(--muted);
-        display: block;
-        margin-bottom: 6px;
-      }
-      .big {
-        font-size: 1.7rem;
-        font-weight: 700;
-      }
-      .panel {
-        background: rgba(255,255,255,0.03);
-        border: 1px solid var(--border);
-        border-radius: 16px;
-        padding: 18px;
-        margin-top: 18px;
-      }
-      .task-list {
-        list-style: none;
-        padding: 0;
-        margin: 0;
-        display: grid;
-        gap: 12px;
-      }
-      .task-item {
-        display: flex;
-        align-items: flex-start;
-        justify-content: space-between;
-        gap: 12px;
-        background: rgba(255,255,255,0.03);
-        border: 1px solid var(--border);
-        border-radius: 12px;
-        padding: 14px;
-        transition: background 0.2s ease;
-        cursor: pointer;
-      }
-      .task-item:hover {
-        background: rgba(255,255,255,0.05);
-      }
-      .task-item.left {
-        display: flex;
-        align-items: flex-start;
-        gap: 12px;
-        flex: 1;
-      }
-      .task-item input[type="checkbox"] {
-        width: 18px;
-        height: 18px;
-        margin-top: 2px;
-        flex-shrink: 0;
-      }
-      .task-content {
-        flex: 1;
-      }
-      .task-title {
-        font-weight: 500;
-        margin-bottom: 4px;
-      }
-      .task-description {
-        font-size: 0.85rem;
-        color: var(--muted);
-        margin-bottom: 8px;
-        line-height: 1.4;
-      }
-      .task-item.done .task-title {
-        text-decoration: line-through;
-        color: var(--muted);
-      }
-      .task-item.done .task-description {
-        color: #6b7280;
-      }
-      .subtask-count {
-        font-size: 0.75rem;
-        color: var(--gold);
-        font-weight: 600;
-      }
-      .task-actions {
-        display: flex;
-        gap: 8px;
-        flex-shrink: 0;
-      }
-      .task-actions button {
-        padding: 6px 12px;
-        font-size: 0.85rem;
-      }
-      .row {
-        display: flex;
-        gap: 12px;
-        flex-wrap: wrap;
-        align-items: center;
-      }
-      .field {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-        min-width: 220px;
-        flex: 1;
-      }
-      .field label {
-        color: var(--muted);
-        font-size: 0.9rem;
-        font-weight: 500;
-      }
-      input, textarea, select {
-        width: 100%;
-        background: rgba(255,255,255,0.04);
-        color: var(--text);
-        border: 1px solid var(--border);
-        border-radius: 10px;
-        padding: 11px 12px;
-        font-family: inherit;
-      }
-      textarea {
-        resize: vertical;
-        min-height: 80px;
-      }
-      .modal {
-        position: fixed;
-        inset: 0;
-        background: rgba(0,0,0,0.7);
-        display: none;
-        align-items: center;
-        justify-content: center;
-        padding: 20px;
-        z-index: 50;
-      }
-      .modal.visible { display: flex; }
-      .modal-card {
-        width: min(100%, 520px);
-        background: #1b1d22;
-        border: 1px solid var(--border);
-        border-radius: 18px;
-        padding: 22px;
-        max-height: 90vh;
-        overflow-y: auto;
-      }
-      .hidden { display: none; }
-      .timer-box {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        font-size: 1.3rem;
-        font-weight: 700;
-      }
-      .material-symbols-outlined {
-        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-      }
-      .task-detail-modal {
-        position: fixed;
-        inset: 0;
-        background: rgba(0,0,0,0.7);
-        display: none;
-        align-items: center;
-        justify-content: center;
-        padding: 20px;
-        z-index: 51;
-      }
-      .task-detail-modal.visible { display: flex; }
-      .task-detail-card {
-        width: min(100%, 600px);
-        background: #1b1d22;
-        border: 1px solid var(--border);
-        border-radius: 18px;
-        padding: 22px;
-        max-height: 90vh;
-        overflow-y: auto;
-      }
-      .subtask-item {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        background: rgba(255,255,255,0.02);
-        border: 1px solid var(--border);
-        border-radius: 8px;
-        padding: 10px 12px;
-        margin-bottom: 8px;
-      }
-      .subtask-item input[type="checkbox"] {
-        width: 16px;
-        height: 16px;
-        flex-shrink: 0;
-      }
-      .subtask-item.done {
-        opacity: 0.6;
-      }
-      .subtask-item.done .subtask-text {
-        text-decoration: line-through;
-        color: var(--muted);
-      }
-      .subtask-text {
-        flex: 1;
-        font-size: 0.9rem;
-      }
-      .subtask-delete {
-        background: none;
-        border: none;
-        color: var(--muted);
-        cursor: pointer;
-        padding: 4px 8px;
-        font-size: 0.85rem;
-      }
-      .priority-badge {
-        display: inline-block;
-        padding: 4px 8px;
-        border-radius: 999px;
-        font-size: 0.7rem;
-        font-weight: 700;
-        letter-spacing: 0.04em;
-      }
-      .priority-low { background: rgba(34,197,94,0.12); color: #86efac; border: 1px solid rgba(34,197,94,0.35); }
-      .priority-medium { background: rgba(250,204,21,0.12); color: #fcd34d; border: 1px solid rgba(250,204,21,0.35); }
-      .priority-high { background: rgba(248,113,113,0.12); color: #fca5a5; border: 1px solid rgba(248,113,113,0.35); }
-      .priority-critical { background: rgba(244,63,94,0.15); color: #fda4af; border: 1px solid rgba(244,63,94,0.35); }
-      .search-input {
-        width: 100%;
-        background: rgba(255,255,255,0.04);
-        color: var(--text);
-        border: 1px solid var(--border);
-        border-radius: 10px;
-        padding: 10px 12px;
-        margin-bottom: 12px;
-      }
-      @media (max-width: 700px) {
-        body { padding: 0; }
-        .topbar { flex-direction: column; align-items: stretch; }
-        .main { padding: 16px; }
-      }
-    </style>
-  </head>
+<body class="min-h-screen flex flex-col justify-between max-w-md mx-auto relative border-x border-white/5 pb-24 shadow-2xl bg-surface">
 
-  <body>
-    <div class="app">
-      <header class="topbar">
-        <div class="brand">
-          <div class="avatar" id="userAvatarInitials">O</div>
-          <div>
-            <div>OmniFlow</div>
-            <small id="userTitleText">Executive Command Center</small>
-          </div>
-        </div>
-
-        <nav class="nav" aria-label="Main navigation">
-          <button class="active" data-tab="overview">Overview</button>
-          <button data-tab="tasks">Tasks</button>
-          <button data-tab="pipeline">Pipeline</button>
-          <button data-tab="settings">Settings</button>
-        </nav>
-      </header>
-
-      <main class="main">
-        <section id="overview" class="screen active">
-          <div class="hero">
-            <h1 id="greetingHeading">Welcome to OmniFlow</h1>
-            <p class="subtext" id="greetingSubtext">Enter your name in Settings to personalize your command center.</p>
-          </div>
-
-          <div class="metrics">
-            <div class="metric">
-              <span class="label">Weighted Pipeline</span>
-              <span class="big" id="pipelineValue">$0.0M</span>
-            </div>
-            <div class="metric">
-              <span class="label">Critical Path Tasks</span>
-              <span class="big" id="taskCount">0 / 0</span>
-            </div>
-            <div class="metric">
-              <span class="label">Focus Session</span>
-              <span class="big" id="timerDisplay">00:45:00</span>
-            </div>
-          </div>
-
-          <div class="panel">
-            <div class="row" style="justify-content: space-between;">
-              <h3 style="margin: 0;">Focus Session</h3>
-              <button class="secondary" id="toggleTimerBtn" type="button">Start Session</button>
-            </div>
-            <div class="timer-box" style="margin-top: 12px;">
-              <button class="secondary" type="button" id="resetTimerBtn">Reset</button>
-            </div>
-          </div>
-        </section>
-
-        <section id="tasks" class="screen">
-          <div class="row" style="justify-content: space-between; margin-bottom: 16px;">
-            <h2 style="margin: 0;">Executive Tasks Hub</h2>
-            <button class="primary" type="button" id="openTaskModalBtn">Add New Task</button>
-          </div>
-          <div class="panel">
-            <input type="text" id="taskSearchInput" class="search-input" placeholder="Search tasks..." />
-            <ul id="taskList" class="task-list"></ul>
-          </div>
-        </section>
-
-        <section id="pipeline" class="screen">
-          <div class="row" style="justify-content: space-between; margin-bottom: 16px;">
-            <h2 style="margin: 0;">Deal Pipeline</h2>
-            <button class="primary" type="button" id="openDealModalBtn">New Deal</button>
-          </div>
-          <div class="panel">
-            <div id="pipelineSummary">No active pipeline deals found.</div>
-          </div>
-        </section>
-
-        <section id="settings" class="screen">
-          <div class="panel">
-            <h2 style="margin-top: 0;">Settings & Profile</h2>
-            <div class="field">
-              <label for="userNameInput">Your Full Name</label>
-              <input id="userNameInput" type="text" placeholder="e.g. Sarah Jenkins" />
-            </div>
-            <div class="field" style="margin-top: 12px;">
-              <label for="userTitleInput">Organization / Title</label>
-              <input id="userTitleInput" type="text" placeholder="e.g. Managing Director" />
-            </div>
-            <div style="margin-top: 16px;">
-              <button class="primary" type="button" id="saveProfileBtn">Save Profile</button>
-            </div>
-          </div>
-        </section>
-      </main>
+  <!-- ========================================== -->
+  <!-- TOP EXECUTIVE HEADER                       -->
+  <!-- ========================================== -->
+  <header class="sticky top-0 z-40 bg-surface/90 backdrop-blur-md px-5 py-3.5 flex items-center justify-between border-b border-gold-border">
+    <div class="flex items-center gap-3">
+      <div id="userAvatarInitials" class="w-9 h-9 rounded-full bg-surface-card border border-gold/40 flex items-center justify-center text-gold font-bold text-sm shadow-sm transition-transform active:scale-95 cursor-pointer" onclick="switchTab('settings')">
+        OF
+      </div>
+      <div>
+        <h1 class="text-base font-bold tracking-tight text-white flex items-center gap-1.5">
+          OmniFlow <span class="text-[10px] font-semibold text-gold bg-gold/10 px-1.5 py-0.5 rounded border border-gold/30">EXEC</span>
+        </h1>
+        <p class="text-[11px] text-gray-400" id="headerSubtitle">Executive Command Center</p>
+      </div>
     </div>
 
-    <div id="addModal" class="modal" aria-hidden="true">
-      <div class="modal-card">
-        <div class="row" style="justify-content: space-between; align-items: center; margin-bottom: 16px;">
-          <h3 id="modalTitle" style="margin: 0;">Add New Item</h3>
-          <button class="secondary" type="button" id="closeAddModalBtn">Close</button>
+    <div class="flex items-center gap-2">
+      <button onclick="playChime()" title="Test Acoustic Chime" class="w-8 h-8 rounded-full bg-surface-card hover:bg-surface-bright border border-white/10 flex items-center justify-center text-gold transition active:scale-90">
+        <span class="material-symbols-outlined text-[18px]">volume_up</span>
+      </button>
+      <button onclick="switchTab('settings')" title="Settings & Profile" class="w-8 h-8 rounded-full bg-surface-card border border-white/10 flex items-center justify-center text-gray-300 hover:text-white transition">
+        <span class="material-symbols-outlined text-[18px]">manage_accounts</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ========================================== -->
+  <!-- SCREEN 1: OVERVIEW (COMMAND CENTER)        -->
+  <!-- ========================================== -->
+  <main id="view-overview" class="screen-view active px-4 py-4 space-y-4 flex-1 overflow-y-auto">
+    <!-- Executive Briefing Card -->
+    <div class="bg-surface-card p-4 rounded-2xl border border-gold-border relative overflow-hidden">
+      <div class="flex items-center justify-between mb-2">
+        <span class="text-[11px] font-medium text-gold uppercase tracking-wider flex items-center gap-1">
+          <span class="w-1.5 h-1.5 rounded-full bg-gold animate-pulse"></span> Q3 Active Cycle
+        </span>
+        <span class="text-[11px] text-gray-400 bg-white/5 px-2 py-0.5 rounded-full" id="cycleStatus">Executive Suite</span>
+      </div>
+      <h2 class="text-xl font-extrabold text-white" id="greetingHeading">Welcome to OmniFlow</h2>
+      <p class="text-xs text-gray-400 mt-0.5" id="greetingSub">Enter your name in Settings to personalize your command center.</p>
+
+      <!-- Metrics Row -->
+      <div class="grid grid-cols-2 gap-3 mt-4 pt-3 border-t border-white/10">
+        <div>
+          <span class="text-[11px] text-gray-400">Active Projects</span>
+          <div class="text-xl font-bold text-gold" id="overviewProjectCount">0</div>
+          <span class="text-[10px] text-emerald-400 font-medium" id="overviewProjectSubtitle">0 Tasks Tracked</span>
+        </div>
+        <div>
+          <span class="text-[11px] text-gray-400">Critical Path Tasks</span>
+          <div class="text-xl font-bold text-white" id="overviewTaskRatio">0 / 0</div>
+          <span class="text-[10px] text-gray-400" id="overviewTaskPercent">0% Cleared</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Focus Session Stopwatch Card -->
+    <div class="bg-surface-card p-4 rounded-2xl border border-white/10 relative">
+      <div class="flex items-center justify-between mb-2">
+        <span class="text-xs font-semibold text-white flex items-center gap-1.5">
+          <span class="material-symbols-outlined text-[16px] text-gold">timer</span> Focus Session
+        </span>
+        <span class="text-[10px] text-gold bg-gold/10 px-2 py-0.5 rounded-full font-medium border border-gold/30" id="focusModeLabel">Sprint Phase 04</span>
+      </div>
+      <div class="text-center py-2">
+        <div id="timerDisplay" class="text-4xl font-extrabold tracking-wider text-gold font-mono">00:45:00</div>
+        <p class="text-[11px] text-gray-400 mt-1" id="focusDurationText">45-Minute Focus Block</p>
+      </div>
+      <div class="flex gap-2 mt-3">
+        <button id="toggleTimerBtn" onclick="toggleTimer()" class="flex-1 py-2.5 rounded-xl bg-gold text-surface font-bold text-xs flex items-center justify-center gap-1.5 active:scale-95 transition shadow-lg shadow-gold/20">
+          <span class="material-symbols-outlined text-[16px]" id="timerBtnIcon">play_arrow</span>
+          <span id="timerBtnText">Start Session</span>
+        </button>
+        <button onclick="resetTimer()" class="px-4 py-2.5 rounded-xl bg-surface-bright text-gray-300 font-semibold text-xs border border-white/10 active:scale-95 transition">
+          Reset
+        </button>
+      </div>
+    </div>
+
+    <!-- Critical Path Checklist Card -->
+    <div class="bg-surface-card p-4 rounded-2xl border border-white/10">
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="text-xs font-bold uppercase tracking-wider text-gray-300">Critical Path Checklist</h3>
+        <button onclick="switchTab('tasks')" class="text-[11px] text-gold font-medium hover:underline flex items-center gap-0.5">
+          View All <span class="material-symbols-outlined text-[14px]">arrow_forward</span>
+        </button>
+      </div>
+      <div class="space-y-2.5" id="homeChecklistContainer">
+        <!-- Rendered via JS -->
+      </div>
+    </div>
+
+    <!-- Priority Project Highlight Card -->
+    <div class="bg-surface-card p-4 rounded-2xl border border-gold-border">
+      <div class="flex items-center justify-between text-[11px] mb-1.5">
+        <span class="text-gold font-semibold uppercase tracking-wider">Top Priority Project</span>
+        <span class="text-emerald-400 font-bold" id="leadProjectBadge">Active</span>
+      </div>
+      <div id="homeProjectHighlight">
+        <!-- Rendered via JS -->
+      </div>
+    </div>
+  </main>
+
+  <!-- ========================================== -->
+  <!-- SCREEN 2: TASKS HUB                        -->
+  <!-- ========================================== -->
+  <main id="view-tasks" class="screen-view px-4 py-4 space-y-4 flex-1 overflow-y-auto">
+    <div class="flex items-center justify-between">
+      <div>
+        <h2 class="text-lg font-bold text-white">Executive Tasks Hub</h2>
+        <p class="text-xs text-gray-400">High-priority operational items with subtask breakdown.</p>
+      </div>
+      <button onclick="openAddModal('task')" class="px-3 py-1.5 bg-gold text-surface font-bold text-xs rounded-xl flex items-center gap-1 active:scale-95 shadow-md shadow-gold/20">
+        <span class="material-symbols-outlined text-[16px]">add</span> New Task
+      </button>
+    </div>
+
+    <!-- Search & Filter Bar -->
+    <div class="relative">
+      <span class="material-symbols-outlined absolute left-3 top-2.5 text-gray-500 text-[18px]">search</span>
+      <input type="text" id="taskSearchInput" oninput="handleSearch(this.value)" placeholder="Search tasks by title, priority or project..." class="w-full bg-surface-card border border-white/10 rounded-xl pl-9 pr-3 py-2 text-xs text-white focus:outline-none focus:border-gold">
+    </div>
+
+    <!-- Task List Container -->
+    <div class="bg-surface-card p-4 rounded-2xl border border-white/10 space-y-3">
+      <div class="flex items-center justify-between border-b border-white/5 pb-2 text-xs">
+        <span class="font-bold uppercase text-gray-300">Action Items</span>
+        <span class="text-gold font-medium" id="tasksTabCount">0 Items</span>
+      </div>
+      <div class="space-y-2.5" id="fullTaskList">
+        <!-- Rendered via JS -->
+      </div>
+    </div>
+  </main>
+
+  <!-- ========================================== -->
+  <!-- SCREEN 3: PROJECTS TERMINAL                -->
+  <!-- ========================================== -->
+  <main id="view-projects" class="screen-view px-4 py-4 space-y-4 flex-1 overflow-y-auto">
+    <div class="flex items-center justify-between">
+      <div>
+        <h2 class="text-lg font-bold text-white">Projects Terminal</h2>
+        <p class="text-xs text-gray-400">Structured initiatives with assigned tasks & subtasks.</p>
+      </div>
+      <button onclick="openAddModal('project')" class="px-3 py-1.5 bg-gold text-surface font-bold text-xs rounded-xl flex items-center gap-1 active:scale-95 shadow-md shadow-gold/20">
+        <span class="material-symbols-outlined text-[16px]">add</span> New Project
+      </button>
+    </div>
+
+    <!-- Project Metrics Overview -->
+    <div class="grid grid-cols-2 gap-3">
+      <div class="bg-surface-card p-3 rounded-xl border border-gold-border">
+        <span class="text-[10px] text-gray-400">Active Initiatives</span>
+        <div class="text-lg font-bold text-gold" id="projectsSummaryCount">0</div>
+        <span class="text-[10px] text-emerald-400" id="projectsCompletedSubtasks">0 Subtasks Done</span>
+      </div>
+      <div class="bg-surface-card p-3 rounded-xl border border-white/10">
+        <span class="text-[10px] text-gray-400">Total Project Tasks</span>
+        <div class="text-lg font-bold text-white" id="projectsSummaryTasks">0</div>
+        <span class="text-[10px] text-gray-400">Multi-Chain & Governance</span>
+      </div>
+    </div>
+
+    <!-- Project Cards Listing -->
+    <div class="space-y-3" id="projectCardsList">
+      <!-- Rendered via JS -->
+    </div>
+  </main>
+
+  <!-- ========================================== -->
+  <!-- SCREEN 4: SETTINGS & PREFERENCES           -->
+  <!-- ========================================== -->
+  <main id="view-settings" class="screen-view px-4 py-4 space-y-4 flex-1 overflow-y-auto">
+    <div>
+      <h2 class="text-lg font-bold text-white">Settings & Preferences</h2>
+      <p class="text-xs text-gray-400">Configure your profile, focus sprint length, and audio.</p>
+    </div>
+
+    <!-- Profile Personalization Card -->
+    <div class="bg-surface-card p-4 rounded-2xl border border-gold-border space-y-3">
+      <h3 class="text-xs font-bold uppercase tracking-wider text-gold">Executive Identity</h3>
+      <div>
+        <label class="block text-xs text-gray-300 font-medium mb-1">Your Full Name</label>
+        <input type="text" id="userNameInput" placeholder="e.g. Sarah Jenkins" class="w-full bg-surface-bright border border-white/15 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-gold">
+      </div>
+      <div>
+        <label class="block text-xs text-gray-300 font-medium mb-1">Organization / Title</label>
+        <input type="text" id="userTitleInput" placeholder="e.g. Managing Director" class="w-full bg-surface-bright border border-white/15 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-gold">
+      </div>
+      <button onclick="saveUserProfile()" class="w-full py-2.5 rounded-xl bg-gold text-surface font-bold text-xs flex items-center justify-center gap-1 active:scale-95 transition shadow-lg shadow-gold/20">
+        <span class="material-symbols-outlined text-[16px]">save</span> Save Profile
+      </button>
+    </div>
+
+    <!-- Focus Session Duration Customizer -->
+    <div class="bg-surface-card p-4 rounded-2xl border border-white/10 space-y-3">
+      <div class="flex items-center justify-between">
+        <h3 class="text-xs font-bold uppercase tracking-wider text-gray-300 flex items-center gap-1.5">
+          <span class="material-symbols-outlined text-gold text-[16px]">timer</span> Focus Session Sprint Length
+        </h3>
+        <span class="text-gold font-bold text-xs" id="activeDurationDisplay">45 Min</span>
+      </div>
+      <p class="text-[11px] text-gray-400">Choose how long each operational focus session should run before ringing completion chime.</p>
+
+      <div class="grid grid-cols-4 gap-2">
+        <button type="button" onclick="setFocusPreset(15)" class="py-2 px-1 text-center rounded-xl bg-surface-bright border border-white/10 hover:border-gold text-xs font-semibold text-gray-200 transition active:scale-95 duration-preset-btn" data-minutes="15">
+          15m
+        </button>
+        <button type="button" onclick="setFocusPreset(25)" class="py-2 px-1 text-center rounded-xl bg-surface-bright border border-white/10 hover:border-gold text-xs font-semibold text-gray-200 transition active:scale-95 duration-preset-btn" data-minutes="25">
+          25m <span class="block text-[9px] text-gray-400 font-normal">Pomodoro</span>
+        </button>
+        <button type="button" onclick="setFocusPreset(45)" class="py-2 px-1 text-center rounded-xl bg-gold text-surface border border-gold font-bold text-xs transition active:scale-95 duration-preset-btn" data-minutes="45">
+          45m <span class="block text-[9px] font-normal opacity-80">Standard</span>
+        </button>
+        <button type="button" onclick="setFocusPreset(60)" class="py-2 px-1 text-center rounded-xl bg-surface-bright border border-white/10 hover:border-gold text-xs font-semibold text-gray-200 transition active:scale-95 duration-preset-btn" data-minutes="60">
+          60m
+        </button>
+      </div>
+
+      <div class="pt-2 border-t border-white/5 flex items-center gap-2">
+        <label class="text-xs text-gray-400 flex-1">Custom Minutes:</label>
+        <input type="number" id="customMinutesInput" min="1" max="180" placeholder="e.g. 50" class="w-20 bg-surface-bright border border-white/15 rounded-xl px-2.5 py-1.5 text-xs text-white text-center focus:outline-none focus:border-gold">
+        <button type="button" onclick="applyCustomDuration()" class="px-3 py-1.5 bg-gold text-surface font-bold text-xs rounded-xl active:scale-95">Set</button>
+      </div>
+    </div>
+
+    <!-- Sound & Aesthetic Preferences -->
+    <div class="bg-surface-card p-4 rounded-2xl border border-white/10 space-y-3 text-xs">
+      <h3 class="font-bold uppercase tracking-wider text-gray-300">Sound & Theme</h3>
+      <div class="flex items-center justify-between py-2 border-b border-white/5">
+        <div>
+          <span class="font-medium text-white block">Acoustic Audio Feedback</span>
+          <span class="text-[11px] text-gray-400">Harmonic brass chimes & brushed metallic micro-ticks</span>
+        </div>
+        <input type="checkbox" id="prefAudioToggle" checked onchange="toggleAudioPref(this.checked)" class="accent-[#d4af37] w-4 h-4 rounded">
+      </div>
+      <div class="flex items-center justify-between py-2">
+        <div>
+          <span class="font-medium text-white block">Active Theme</span>
+          <span class="text-[11px] text-gray-400">Executive Business Casual (Default)</span>
+        </div>
+        <span class="text-gold font-bold text-[11px]">ACTIVE</span>
+      </div>
+    </div>
+
+    <!-- Data Reset -->
+    <div class="bg-surface-card p-4 rounded-2xl border border-red-500/20 text-xs">
+      <h3 class="font-bold uppercase tracking-wider text-red-400 mb-1">System Reset</h3>
+      <p class="text-gray-400 text-[11px] mb-3">Clear all custom projects, tasks, and stored settings.</p>
+      <button onclick="resetAllData()" class="w-full py-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 font-bold rounded-xl active:scale-95 transition">
+        Reset to Initial Clean State
+      </button>
+    </div>
+  </main>
+
+  <!-- ========================================== -->
+  <!-- TASK DRILL-DOWN & SUBTASKS MODAL           -->
+  <!-- ========================================== -->
+  <div id="taskDetailModal" class="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div class="bg-surface-card w-full max-w-md rounded-t-3xl sm:rounded-3xl border border-gold-border p-5 space-y-4 max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between border-b border-white/10 pb-3">
+        <div class="flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-gold"></span>
+          <h3 class="text-sm font-bold text-white" id="detailTaskTitle">Task Details</h3>
+        </div>
+        <button onclick="closeTaskDetail()" class="w-7 h-7 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-gray-400">
+          <span class="material-symbols-outlined text-[18px]">close</span>
+        </button>
+      </div>
+
+      <!-- Priority & Project Badge -->
+      <div class="flex items-center justify-between text-xs">
+        <span id="detailPriorityBadge" class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider">Medium Priority</span>
+        <span id="detailProjectName" class="text-gray-400 text-[11px]">General Operations</span>
+      </div>
+
+      <!-- Subtasks Section -->
+      <div class="space-y-2">
+        <div class="flex items-center justify-between">
+          <h4 class="text-xs font-bold text-gray-300 uppercase tracking-wider">Subtask Breakdown</h4>
+          <span class="text-[11px] text-gold font-medium" id="subtaskProgressRatio">0 / 0</span>
+        </div>
+        <div class="space-y-2" id="detailSubtasksList">
+          <!-- Rendered via JS -->
         </div>
 
-        <div id="taskFields">
-          <div class="field">
-            <label for="newTaskTitle">Task Title</label>
-            <input id="newTaskTitle" type="text" placeholder="e.g. Review legal agreement" />
-          </div>
-          <div class="field" style="margin-top: 12px;">
-            <label for="newTaskDescription">Task Description (Optional)</label>
-            <textarea id="newTaskDescription" placeholder="Add any specifics or notes about this task..."></textarea>
-          </div>
-          <div class="field" style="margin-top: 12px;">
-            <label for="newTaskPriority">Priority</label>
-            <select id="newTaskPriority">
+        <!-- Add Subtask Input -->
+        <div class="flex gap-2 pt-2">
+          <input type="text" id="newSubtaskInput" onkeypress="if(event.key==='Enter') addSubtaskToActiveTask()" placeholder="Add a subtask step..." class="flex-1 bg-surface-bright border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-gold">
+          <button onclick="addSubtaskToActiveTask()" class="px-3 py-2 bg-gold text-surface font-bold text-xs rounded-xl active:scale-95">Add</button>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="flex gap-2 pt-2 border-t border-white/10">
+        <button onclick="deleteActiveTask()" class="py-2.5 px-4 bg-red-500/10 hover:bg-red-500/20 text-red-400 font-bold text-xs rounded-xl border border-red-500/20 active:scale-95">
+          Delete Task
+        </button>
+        <button onclick="closeTaskDetail()" class="flex-1 py-2.5 bg-gold text-surface font-bold text-xs rounded-xl shadow-lg shadow-gold/20 active:scale-95">
+          Done
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- QUICK CREATION SUITE MODAL                 -->
+  <!-- ========================================== -->
+  <div id="addModal" class="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div class="bg-surface-card w-full max-w-md rounded-t-3xl sm:rounded-3xl border border-gold-border p-5 space-y-4 max-h-[92vh] overflow-y-auto">
+      <div class="flex items-center justify-between">
+        <h3 class="text-base font-bold text-white flex items-center gap-1.5" id="modalTitle">
+          <span class="material-symbols-outlined text-gold">add_circle</span> Add New Item
+        </h3>
+        <button onclick="closeAddModal()" class="w-7 h-7 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-gray-400">
+          <span class="material-symbols-outlined text-[18px]">close</span>
+        </button>
+      </div>
+
+      <!-- Tab Switcher between Task & Project -->
+      <div class="flex gap-2 p-1 bg-surface-bright rounded-xl">
+        <button id="modalTabTask" onclick="setModalType('task')" class="flex-1 py-1.5 rounded-lg text-xs font-bold bg-gold text-surface transition">Task</button>
+        <button id="modalTabProject" onclick="setModalType('project')" class="flex-1 py-1.5 rounded-lg text-xs font-semibold text-gray-300 transition">Project</button>
+      </div>
+
+      <!-- Task Form Fields -->
+      <div id="modalTaskFields" class="space-y-3">
+        <div>
+          <label class="block text-xs text-gray-300 font-medium mb-1">Task Title</label>
+          <input type="text" id="newTaskTitle" placeholder="e.g. Finalize Multi-Chain Liquidity Routing" class="w-full bg-surface-bright border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-gold">
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block text-xs text-gray-300 font-medium mb-1">Priority</label>
+            <select id="newTaskPriority" class="w-full bg-surface-bright border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-gold">
               <option value="low">Low</option>
               <option value="medium" selected>Medium</option>
               <option value="high">High</option>
-              <option value="critical">Critical</option>
+              <option value="critical">Critical (P0)</option>
             </select>
           </div>
-          <div class="field" style="margin-top: 12px;">
-            <label for="newTaskDueDate">Due Date</label>
-            <input id="newTaskDueDate" type="date" />
+          <div>
+            <label class="block text-xs text-gray-300 font-medium mb-1">Assign to Project</label>
+            <select id="newTaskProjectSelect" class="w-full bg-surface-bright border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-gold">
+              <option value="">General / None</option>
+            </select>
           </div>
         </div>
-
-        <div id="dealFields" class="hidden">
-          <div class="field">
-            <label for="newDealCompany">Company / Client Name</label>
-            <input id="newDealCompany" type="text" placeholder="e.g. Apex Corporation" />
-          </div>
-          <div class="field" style="margin-top: 12px;">
-            <label for="newDealValue">Value ($)</label>
-            <input id="newDealValue" type="text" placeholder="e.g. $250k" />
-          </div>
-          <div class="field" style="margin-top: 12px;">
-            <label for="newDealProb">Probability (%)</label>
-            <input id="newDealProb" type="text" placeholder="e.g. 75%" />
-          </div>
-        </div>
-
-        <div class="row" style="margin-top: 20px; justify-content: flex-end;">
-          <button class="secondary" type="button" id="cancelAddBtn">Cancel</button>
-          <button class="primary" type="button" id="submitModalBtn">Save Item</button>
+        <div>
+          <label class="block text-xs text-gray-300 font-medium mb-1">Initial Subtasks (Comma-separated)</label>
+          <input type="text" id="newTaskInitialSubtasks" placeholder="e.g. Audit contract, Benchmark latency, Sign multisig" class="w-full bg-surface-bright border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-gold">
         </div>
       </div>
-    </div>
 
-    <div id="taskDetailModal" class="task-detail-modal" aria-hidden="true">
-      <div class="task-detail-card">
-        <div class="row" style="justify-content: space-between; align-items: center; margin-bottom: 16px;">
-          <h3 style="margin: 0;">Task Details</h3>
-          <button class="secondary" type="button" id="closeTaskDetailBtn">Close</button>
+      <!-- Project Form Fields -->
+      <div id="modalProjectFields" class="space-y-3 hidden">
+        <div>
+          <label class="block text-xs text-gray-300 font-medium mb-1">Project Name</label>
+          <input type="text" id="newProjectName" placeholder="e.g. Project Nexus: Sovereign Bridge" class="w-full bg-surface-bright border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-gold">
         </div>
-
-        <div id="taskDetailContent">
-          <div class="field">
-            <label>Title</label>
-            <div id="detailTaskTitle" style="padding: 11px 12px; background: rgba(255,255,255,0.04); border: 1px solid var(--border); border-radius: 10px; font-weight: 500;"></div>
-          </div>
-
-          <div class="field" style="margin-top: 12px;">
-            <label>Priority</label>
-            <div id="detailTaskPriority" style="padding: 11px 12px; background: rgba(255,255,255,0.04); border: 1px solid var(--border); border-radius: 10px;"></div>
-          </div>
-
-          <div class="field" style="margin-top: 12px;">
-            <label>Due Date</label>
-            <div id="detailTaskDueDate" style="padding: 11px 12px; background: rgba(255,255,255,0.04); border: 1px solid var(--border); border-radius: 10px; color: var(--muted);"></div>
-          </div>
-
-          <div class="field" style="margin-top: 12px;">
-            <label>Description</label>
-            <div id="detailTaskDescription" style="padding: 11px 12px; background: rgba(255,255,255,0.04); border: 1px solid var(--border); border-radius: 10px; font-size: 0.9rem; color: var(--muted); line-height: 1.4; min-height: 60px;"></div>
-          </div>
-
-          <div style="margin-top: 16px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-              <label style="margin: 0; color: var(--muted); font-weight: 500;">Subtasks</label>
-              <button class="secondary" type="button" id="addSubtaskBtn" style="padding: 6px 12px; font-size: 0.85rem;">+ Add Subtask</button>
-            </div>
-            <div id="subtasksList" style="background: rgba(255,255,255,0.01); border: 1px solid var(--border); border-radius: 10px; padding: 12px;"></div>
-          </div>
-
-          <div id="newSubtaskField" class="hidden" style="margin-top: 12px;">
-            <div style="display: flex; gap: 8px;">
-              <input id="newSubtaskInput" type="text" placeholder="Enter subtask..." style="flex: 1;" />
-              <button class="primary" type="button" id="saveSubtaskBtn" style="padding: 8px 12px; font-size: 0.85rem;">Add</button>
-            </div>
-          </div>
+        <div>
+          <label class="block text-xs text-gray-300 font-medium mb-1">Target Description / Protocol</label>
+          <input type="text" id="newProjectDescription" placeholder="e.g. Cross-shard settlement & cryptographic consensus" class="w-full bg-surface-bright border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-gold">
         </div>
-
-        <div class="row" style="margin-top: 20px; justify-content: flex-end;">
-          <button class="secondary" type="button" id="deleteTaskDetailBtn">Delete Task</button>
-          <button class="primary" type="button" id="closeTaskDetailBtnBottom">Done</button>
+        <div>
+          <label class="block text-xs text-gray-300 font-medium mb-1">Initial Project Tasks (Comma-separated)</label>
+          <input type="text" id="newProjectInitialTasks" placeholder="e.g. Security audit, Stress test, Key ceremony" class="w-full bg-surface-bright border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-gold">
         </div>
       </div>
+
+      <div class="flex gap-2 pt-2">
+        <button onclick="closeAddModal()" class="flex-1 py-2.5 bg-surface-bright text-gray-300 font-bold text-xs rounded-xl border border-white/10">Cancel</button>
+        <button onclick="submitModalItem()" class="flex-1 py-2.5 bg-gold text-surface font-extrabold text-xs rounded-xl shadow-lg shadow-gold/25 active:scale-95 transition">Save Item</button>
+      </div>
     </div>
+  </div>
 
-    <script>
-      const defaultState = {
-        user: { name: '', title: 'Executive Command Center' },
-        tasks: [],
-        deals: [],
-        timerSeconds: 45 * 60,
-        timerRunning: false,
-        activeTab: 'overview',
-        audioEnabled: true,
-        modalType: 'task',
-        searchQuery: ''
-      };
+  <!-- ========================================== -->
+  <!-- DOCKED BOTTOM NAVIGATION BAR (LUXURY GOLD) -->
+  <!-- ========================================== -->
+  <nav class="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-surface/95 backdrop-blur-xl border-t border-gold-border px-4 py-2 pb-safe flex justify-around items-center z-40">
+    <button id="nav-btn-overview" onclick="switchTab('overview')" class="flex flex-col items-center gap-0.5 text-gold font-bold text-[10px] transition-colors">
+      <span class="material-symbols-outlined text-[20px]">dashboard</span>
+      <span>Overview</span>
+    </button>
+    <button id="nav-btn-tasks" onclick="switchTab('tasks')" class="flex flex-col items-center gap-0.5 text-gray-400 hover:text-white text-[10px] transition-colors">
+      <span class="material-symbols-outlined text-[20px]">checklist</span>
+      <span>Tasks</span>
+    </button>
+    <button onclick="openAddModal('task')" class="w-10 h-10 rounded-full bg-gold text-surface flex items-center justify-center -mt-4 shadow-lg shadow-gold/30 active:scale-90 transition" title="Add item">
+      <span class="material-symbols-outlined text-[22px] font-bold">add</span>
+    </button>
+    <button id="nav-btn-projects" onclick="switchTab('projects')" class="flex flex-col items-center gap-0.5 text-gray-400 hover:text-white text-[10px] transition-colors">
+      <span class="material-symbols-outlined text-[20px]">folder</span>
+      <span>Projects</span>
+    </button>
+    <button id="nav-btn-settings" onclick="switchTab('settings')" class="flex flex-col items-center gap-0.5 text-gray-400 hover:text-white text-[10px] transition-colors">
+      <span class="material-symbols-outlined text-[20px]">settings</span>
+      <span>Settings</span>
+    </button>
+  </nav>
 
-      let appState = loadState();
-      let timerInterval = null;
-      let currentTaskDetailId = null;
+  <!-- ========================================== -->
+  <!-- CORE CONTROLLER SCRIPT (SPA + STORAGE)     -->
+  <!-- ========================================== -->
+  <script>
+    // Master State with Persistent LocalStorage
+    const defaultState = {
+      user: { name: '', title: 'Executive Command Center' },
+      tasks: [],
+      projects: [],
+      focusMinutes: 45,
+      timerSeconds: 45 * 60,
+      timerRunning: false,
+      audioEnabled: true,
+      searchQuery: ''
+    };
 
-      function loadState() {
-        try {
-          const stored = JSON.parse(localStorage.getItem('omniflow_state') || '{}');
-          return {
-            ...defaultState,
-            ...stored,
-            user: { ...defaultState.user, ...(stored.user || {}) },
-            tasks: Array.isArray(stored.tasks) ? stored.tasks : [],
-            deals: Array.isArray(stored.deals) ? stored.deals : []
-          };
-        } catch (error) {
-          return { ...defaultState };
-        }
+    let appState = loadState();
+    let timerInterval = null;
+    let activeTaskDetailId = null;
+
+    function loadState() {
+      try {
+        const stored = JSON.parse(localStorage.getItem('omniflow_exec_state') || '{}');
+        return {
+          ...defaultState,
+          ...stored,
+          user: { ...defaultState.user, ...(stored.user || {}) },
+          tasks: Array.isArray(stored.tasks) ? stored.tasks : [],
+          projects: Array.isArray(stored.projects) ? stored.projects : [],
+          focusMinutes: Number(stored.focusMinutes) || 45,
+          timerSeconds: Number(stored.timerSeconds) || 45 * 60,
+          audioEnabled: stored.audioEnabled !== false
+        };
+      } catch (e) {
+        return { ...defaultState };
       }
+    }
 
-      function saveState() {
-        localStorage.setItem('omniflow_state', JSON.stringify(appState));
-      }
+    function saveState() {
+      localStorage.setItem('omniflow_exec_state', JSON.stringify(appState));
+    }
 
-      function formatDueDate(dateString) {
-        if (!dateString) return 'No due date';
-        const date = new Date(dateString + 'T00:00:00');
-        if (Number.isNaN(date.getTime())) return 'No due date';
-        return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
-      }
+    // TAB CONTROLLER
+    function switchTab(tabId) {
+      playTick();
+      document.querySelectorAll('.screen-view').forEach(view => view.classList.remove('active'));
+      const target = document.getElementById(`view-${tabId}`);
+      if (target) target.classList.add('active');
 
-      function formatTime(totalSeconds) {
-        const hours = String(Math.floor(totalSeconds / 3600)).padStart(2, '0');
-        const minutes = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, '0');
-        const seconds = String(totalSeconds % 60).padStart(2, '0');
-        return `${hours}:${minutes}:${seconds}`;
-      }
-
-      function getPriorityLabel(priority) {
-        return (priority || 'medium').charAt(0).toUpperCase() + (priority || 'medium').slice(1);
-      }
-
-      function getPriorityClass(priority) {
-        return `priority-${priority || 'medium'}`;
-      }
-
-      function renderGreeting() {
-        const name = appState.user.name?.trim();
-        const title = appState.user.title?.trim() || 'Executive Command Center';
-
-        if (name) {
-          document.getElementById('greetingHeading').textContent = `Good day, ${name}`;
-          document.getElementById('greetingSubtext').textContent = title;
-        } else {
-          document.getElementById('greetingHeading').textContent = 'Welcome to OmniFlow';
-          document.getElementById('greetingSubtext').textContent = 'Enter your name in Settings to personalize your command center.';
-        }
-
-        document.getElementById('userTitleText').textContent = title;
-        const initials = name ? name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() : 'OF';
-        document.getElementById('userAvatarInitials').textContent = initials;
-      }
-
-      function getFilteredTasks() {
-        const query = (appState.searchQuery || '').trim().toLowerCase();
-        if (!query) return appState.tasks;
-        return appState.tasks.filter(task => {
-          const searchable = [task.title, task.description, task.priority, task.dueDate].join(' ').toLowerCase();
-          return searchable.includes(query);
-        });
-      }
-
-      function renderTasks() {
-        const list = document.getElementById('taskList');
-        const filteredTasks = getFilteredTasks();
-
-        if (!filteredTasks.length) {
-          list.innerHTML = '<li class="panel" style="padding: 16px; color: var(--muted);">No tasks match your search.</li>';
-          return;
-        }
-
-        list.innerHTML = filteredTasks.map(task => {
-          const subtaskCount = (task.subtasks || []).length;
-          const completedSubtasks = (task.subtasks || []).filter(s => s.completed).length;
-          const subtaskInfo = subtaskCount > 0 ? `<div class="subtask-count">${completedSubtasks}/${subtaskCount} subtasks</div>` : '';
-          const dueDate = task.dueDate ? `<div style="font-size: 0.72rem; color: var(--muted); margin-top: 6px;">Due: ${formatDueDate(task.dueDate)}</div>` : '';
-          const priorityBadge = `<span class="priority-badge ${getPriorityClass(task.priority)}">${getPriorityLabel(task.priority)}</span>`;
-
-          return `
-            <li class="task-item ${task.completed ? 'done' : ''}" onclick="openTaskDetail(${task.id})">
-              <div class="task-item left">
-                <input type="checkbox" ${task.completed ? 'checked' : ''} data-task-toggle="${task.id}" onclick="event.stopPropagation(); toggleTask(${task.id})" />
-                <div class="task-content">
-                  <div class="task-title">${task.title}</div>
-                  ${task.description ? `<div class="task-description">${task.description}</div>` : ''}
-                  <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; flex-wrap:wrap;">
-                    ${priorityBadge}
-                    ${dueDate}
-                  </div>
-                  ${subtaskInfo}
-                </div>
-              </div>
-              <div class="task-actions">
-                <button class="danger" type="button" onclick="event.stopPropagation(); deleteTask(${task.id})">Delete</button>
-              </div>
-            </li>
-          `;
-        }).join('');
-      }
-
-      function renderPipeline() {
-        const summary = document.getElementById('pipelineSummary');
-        if (!appState.deals.length) {
-          summary.textContent = 'No active pipeline deals found.';
-          return;
-        }
-
-        const total = appState.deals.reduce((sum, deal) => sum + (Number(deal.value) || 0), 0);
-        summary.innerHTML = `
-          <div style="display: grid; gap: 12px;">
-            ${appState.deals.map(deal => `
-              <div class="task-item" style="align-items: center;">
-                <div>
-                  <strong>${deal.company}</strong><br>
-                  <small style="color: var(--muted);">${deal.probability}% probability</small>
-                </div>
-                <div style="font-weight: 700;">$${Number(deal.value).toLocaleString()}</div>
-              </div>
-            `).join('')}
-            <div style="font-weight: 700; color: var(--gold);">Total pipeline: $${total.toLocaleString()}</div>
-          </div>
-        `;
-      }
-
-      function renderTimer() {
-        document.getElementById('timerDisplay').textContent = formatTime(appState.timerSeconds);
-        const toggleButton = document.getElementById('toggleTimerBtn');
-        toggleButton.textContent = appState.timerRunning ? 'Pause Session' : 'Start Session';
-      }
-
-      function switchTab(tabName) {
-        appState.activeTab = tabName;
-        document.querySelectorAll('.nav button').forEach(btn => {
-          btn.classList.toggle('active', btn.dataset.tab === tabName);
-        });
-        document.querySelectorAll('.screen').forEach(screen => {
-          screen.classList.toggle('active', screen.id === tabName);
-        });
-        saveState();
-      }
-
-      function openModal(type) {
-        appState.modalType = type;
-        const modal = document.getElementById('addModal');
-        const modalTitle = document.getElementById('modalTitle');
-        const taskFields = document.getElementById('taskFields');
-        const dealFields = document.getElementById('dealFields');
-
-        modalTitle.textContent = type === 'deal' ? 'Add Deal' : 'Add New Task';
-        taskFields.classList.toggle('hidden', type === 'deal');
-        dealFields.classList.toggle('hidden', type === 'task');
-        modal.classList.add('visible');
-        modal.setAttribute('aria-hidden', 'false');
-      }
-
-      function closeModal() {
-        document.getElementById('addModal').classList.remove('visible');
-        document.getElementById('addModal').setAttribute('aria-hidden', 'true');
-      }
-
-      function submitModal() {
-        if (appState.modalType === 'deal') {
-          const company = document.getElementById('newDealCompany').value.trim();
-          const value = Number((document.getElementById('newDealValue').value || '0').replace(/[^0-9.-]/g, '')) || 0;
-          const probability = Number((document.getElementById('newDealProb').value || '0').replace(/[^0-9]/g, '')) || 0;
-
-          if (!company) {
-            alert('Please enter a company name.');
-            return;
+      ['overview', 'tasks', 'projects', 'settings'].forEach(id => {
+        const btn = document.getElementById(`nav-btn-${id}`);
+        if (btn) {
+          if (id === tabId) {
+            btn.className = "flex flex-col items-center gap-0.5 text-gold font-bold text-[10px] transition-colors";
+          } else {
+            btn.className = "flex flex-col items-center gap-0.5 text-gray-400 hover:text-white text-[10px] transition-colors";
           }
+        }
+      });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
 
-          appState.deals.push({ id: Date.now(), company, value, probability });
+    // FOCUS TIMER CONTROLLER
+    function formatTime(totalSec) {
+      const h = String(Math.floor(totalSec / 3600)).padStart(2, '0');
+      const m = String(Math.floor((totalSec % 3600) / 60)).padStart(2, '0');
+      const s = String(totalSec % 60).padStart(2, '0');
+      return `${h}:${m}:${s}`;
+    }
+
+    function updateTimerUI() {
+      document.getElementById('timerDisplay').textContent = formatTime(appState.timerSeconds);
+      document.getElementById('focusDurationText').textContent = `${appState.focusMinutes}-Minute Focus Block`;
+      document.getElementById('activeDurationDisplay').textContent = `${appState.focusMinutes} Min`;
+      document.getElementById('timerBtnText').textContent = appState.timerRunning ? 'Pause Session' : 'Start Session';
+      document.getElementById('timerBtnIcon').textContent = appState.timerRunning ? 'pause' : 'play_arrow';
+
+      // Update preset buttons active state
+      document.querySelectorAll('.duration-preset-btn').forEach(btn => {
+        const m = Number(btn.getAttribute('data-minutes'));
+        if (m === appState.focusMinutes) {
+          btn.className = "py-2 px-1 text-center rounded-xl bg-gold text-surface border border-gold font-bold text-xs transition active:scale-95 duration-preset-btn";
         } else {
-          const title = document.getElementById('newTaskTitle').value.trim();
-          const description = document.getElementById('newTaskDescription').value.trim();
-          const priority = document.getElementById('newTaskPriority').value || 'medium';
-          const dueDate = document.getElementById('newTaskDueDate').value || '';
-
-          if (!title) {
-            alert('Please enter a task title.');
-            return;
-          }
-
-          appState.tasks.push({
-            id: Date.now(),
-            title,
-            description,
-            priority,
-            dueDate,
-            completed: false,
-            subtasks: []
-          });
+          btn.className = "py-2 px-1 text-center rounded-xl bg-surface-bright border border-white/10 hover:border-gold text-xs font-semibold text-gray-200 transition active:scale-95 duration-preset-btn";
         }
+      });
+    }
 
-        saveState();
-        renderAll();
-        closeModal();
-        clearModalFields();
-      }
-
-      function clearModalFields() {
-        document.getElementById('newTaskTitle').value = '';
-        document.getElementById('newTaskDescription').value = '';
-        document.getElementById('newTaskPriority').value = 'medium';
-        document.getElementById('newTaskDueDate').value = '';
-        document.getElementById('newDealCompany').value = '';
-        document.getElementById('newDealValue').value = '';
-        document.getElementById('newDealProb').value = '';
-      }
-
-      function toggleTask(taskId) {
-        appState.tasks = appState.tasks.map(task =>
-          task.id === taskId ? { ...task, completed: !task.completed } : task
-        );
-        saveState();
-        renderAll();
-      }
-
-      function deleteTask(taskId) {
-        appState.tasks = appState.tasks.filter(task => task.id !== taskId);
-        if (currentTaskDetailId === taskId) closeTaskDetail();
-        saveState();
-        renderAll();
-      }
-
-      function openTaskDetail(taskId) {
-        currentTaskDetailId = taskId;
-        const task = appState.tasks.find(t => t.id === taskId);
-        if (!task) return;
-
-        document.getElementById('detailTaskTitle').textContent = task.title;
-        document.getElementById('detailTaskPriority').innerHTML = `<span class="priority-badge ${getPriorityClass(task.priority)}">${getPriorityLabel(task.priority)}</span>`;
-        document.getElementById('detailTaskDueDate').textContent = task.dueDate ? formatDueDate(task.dueDate) : 'No due date';
-        document.getElementById('detailTaskDescription').textContent = task.description || '(No description provided)';
-
-        renderSubtasks();
-
-        const modal = document.getElementById('taskDetailModal');
-        modal.classList.add('visible');
-        modal.setAttribute('aria-hidden', 'false');
-      }
-
-      function closeTaskDetail() {
-        document.getElementById('taskDetailModal').classList.remove('visible');
-        document.getElementById('taskDetailModal').setAttribute('aria-hidden', 'true');
-        currentTaskDetailId = null;
-      }
-
-      function renderSubtasks() {
-        if (!currentTaskDetailId) return;
-        const task = appState.tasks.find(t => t.id === currentTaskDetailId);
-        if (!task) return;
-
-        const subtasksList = document.getElementById('subtasksList');
-        const subtasks = task.subtasks || [];
-
-        if (!subtasks.length) {
-          subtasksList.innerHTML = '<p style="color: var(--muted); font-size: 0.9rem; margin: 0;">No subtasks yet. Click "+ Add Subtask" to create one.</p>';
-          return;
-        }
-
-        subtasksList.innerHTML = subtasks.map(subtask => `
-          <div class="subtask-item ${subtask.completed ? 'done' : ''}">
-            <input type="checkbox" ${subtask.completed ? 'checked' : ''} onchange="toggleSubtask(${currentTaskDetailId}, ${subtask.id})">
-            <span class="subtask-text">${subtask.text}</span>
-            <button class="subtask-delete" onclick="deleteSubtask(${currentTaskDetailId}, ${subtask.id})">✕</button>
-          </div>
-        `).join('');
-      }
-
-      function toggleAddSubtask() {
-        const field = document.getElementById('newSubtaskField');
-        field.classList.toggle('hidden');
-        if (!field.classList.contains('hidden')) {
-          document.getElementById('newSubtaskInput').focus();
-        }
-      }
-
-      function saveSubtask() {
-        if (!currentTaskDetailId) return;
-        const input = document.getElementById('newSubtaskInput');
-        const subtaskText = input.value.trim();
-
-        if (!subtaskText) {
-          alert('Please enter a subtask.');
-          return;
-        }
-
-        const task = appState.tasks.find(t => t.id === currentTaskDetailId);
-        if (!task) return;
-
-        if (!task.subtasks) task.subtasks = [];
-        task.subtasks.push({ id: Date.now(), text: subtaskText, completed: false });
-
-        input.value = '';
-        document.getElementById('newSubtaskField').classList.add('hidden');
-        saveState();
-        renderSubtasks();
-        renderAll();
-      }
-
-      function toggleSubtask(taskId, subtaskId) {
-        const task = appState.tasks.find(t => t.id === taskId);
-        if (!task || !task.subtasks) return;
-
-        const subtask = task.subtasks.find(s => s.id === subtaskId);
-        if (subtask) {
-          subtask.completed = !subtask.completed;
-          saveState();
-          renderSubtasks();
-          renderAll();
-        }
-      }
-
-      function deleteSubtask(taskId, subtaskId) {
-        const task = appState.tasks.find(t => t.id === taskId);
-        if (!task || !task.subtasks) return;
-
-        task.subtasks = task.subtasks.filter(s => s.id !== subtaskId);
-        saveState();
-        renderSubtasks();
-        renderAll();
-      }
-
-      function saveProfile() {
-        appState.user.name = document.getElementById('userNameInput').value.trim();
-        appState.user.title = document.getElementById('userTitleInput').value.trim();
-        saveState();
-        renderGreeting();
-        switchTab('overview');
-      }
-
-      function startTimer() {
-        if (appState.timerRunning) return;
+    function toggleTimer() {
+      playTick();
+      if (appState.timerRunning) {
+        clearInterval(timerInterval);
+        appState.timerRunning = false;
+      } else {
         appState.timerRunning = true;
         timerInterval = setInterval(() => {
           if (appState.timerSeconds > 0) {
-            appState.timerSeconds -= 1;
+            appState.timerSeconds--;
+            updateTimerUI();
+            saveState();
           } else {
             clearInterval(timerInterval);
             appState.timerRunning = false;
+            playChime();
+            alert('🔔 Focus Session Complete! Excellent operational progress.');
+            resetTimer();
           }
-          saveState();
-          renderTimer();
         }, 1000);
-        renderTimer();
       }
+      updateTimerUI();
+      saveState();
+    }
 
-      function stopTimer() {
-        appState.timerRunning = false;
-        if (timerInterval) {
-          clearInterval(timerInterval);
-          timerInterval = null;
+    function resetTimer() {
+      playTick();
+      if (timerInterval) clearInterval(timerInterval);
+      appState.timerRunning = false;
+      appState.timerSeconds = appState.focusMinutes * 60;
+      updateTimerUI();
+      saveState();
+    }
+
+    function setFocusPreset(minutes) {
+      playTick();
+      if (timerInterval) clearInterval(timerInterval);
+      appState.timerRunning = false;
+      appState.focusMinutes = minutes;
+      appState.timerSeconds = minutes * 60;
+      document.getElementById('customMinutesInput').value = '';
+      updateTimerUI();
+      saveState();
+    }
+
+    function applyCustomDuration() {
+      const val = Number(document.getElementById('customMinutesInput').value);
+      if (val && val >= 1 && val <= 180) {
+        setFocusPreset(val);
+      } else {
+        alert('Please enter a valid focus duration between 1 and 180 minutes.');
+      }
+    }
+
+    // USER PROFILE
+    function saveUserProfile() {
+      const name = document.getElementById('userNameInput').value.trim();
+      const title = document.getElementById('userTitleInput').value.trim();
+      appState.user.name = name;
+      appState.user.title = title || 'Executive Command Center';
+      saveState();
+      renderAll();
+      playChime();
+      alert('✓ Profile updated successfully!');
+      switchTab('overview');
+    }
+
+    function toggleAudioPref(val) {
+      appState.audioEnabled = val;
+      saveState();
+      if (val) playChime();
+    }
+
+    // MODAL ADD CONTROLLER
+    let currentModalType = 'task';
+    function openAddModal(type) {
+      playTick();
+      currentModalType = type;
+      setModalType(type);
+      populateProjectDropdown();
+      document.getElementById('addModal').classList.remove('hidden');
+    }
+
+    function closeAddModal() {
+      playTick();
+      document.getElementById('addModal').classList.add('hidden');
+    }
+
+    function setModalType(type) {
+      currentModalType = type;
+      const taskBtn = document.getElementById('modalTabTask');
+      const projectBtn = document.getElementById('modalTabProject');
+      const taskFields = document.getElementById('modalTaskFields');
+      const projectFields = document.getElementById('modalProjectFields');
+
+      if (type === 'task') {
+        taskBtn.className = "flex-1 py-1.5 rounded-lg text-xs font-bold bg-gold text-surface transition";
+        projectBtn.className = "flex-1 py-1.5 rounded-lg text-xs font-semibold text-gray-300 transition";
+        taskFields.classList.remove('hidden');
+        projectFields.classList.add('hidden');
+      } else {
+        projectBtn.className = "flex-1 py-1.5 rounded-lg text-xs font-bold bg-gold text-surface transition";
+        taskBtn.className = "flex-1 py-1.5 rounded-lg text-xs font-semibold text-gray-300 transition";
+        projectFields.classList.remove('hidden');
+        taskFields.classList.add('hidden');
+      }
+    }
+
+    function populateProjectDropdown() {
+      const select = document.getElementById('newTaskProjectSelect');
+      select.innerHTML = '<option value="">General / None</option>' +
+        appState.projects.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+    }
+
+    function submitModalItem() {
+      if (currentModalType === 'task') {
+        const title = document.getElementById('newTaskTitle').value.trim();
+        if (!title) return alert('Please enter a task title');
+        const priority = document.getElementById('newTaskPriority').value || 'medium';
+        const projectId = document.getElementById('newTaskProjectSelect').value || null;
+        const rawSubs = document.getElementById('newTaskInitialSubtasks').value.trim();
+        const subtasks = rawSubs
+          ? rawSubs.split(',').map(s => s.trim()).filter(Boolean).map(text => ({ id: Date.now() + Math.random(), text, completed: false }))
+          : [];
+
+        appState.tasks.push({
+          id: Date.now(),
+          title,
+          priority,
+          projectId,
+          completed: false,
+          subtasks
+        });
+        document.getElementById('newTaskTitle').value = '';
+        document.getElementById('newTaskInitialSubtasks').value = '';
+      } else {
+        const name = document.getElementById('newProjectName').value.trim();
+        if (!name) return alert('Please enter a project name');
+        const desc = document.getElementById('newProjectDescription').value.trim() || 'Executive Operational Initiative';
+        const rawTasks = document.getElementById('newProjectInitialTasks').value.trim();
+        const projectId = Date.now();
+
+        appState.projects.push({
+          id: projectId,
+          name,
+          description: desc,
+          createdAt: new Date().toLocaleDateString()
+        });
+
+        if (rawTasks) {
+          rawTasks.split(',').map(t => t.trim()).filter(Boolean).forEach(tTitle => {
+            appState.tasks.push({
+              id: Date.now() + Math.random(),
+              title: tTitle,
+              priority: 'high',
+              projectId: projectId,
+              completed: false,
+              subtasks: []
+            });
+          });
         }
-        renderTimer();
+
+        document.getElementById('newProjectName').value = '';
+        document.getElementById('newProjectDescription').value = '';
+        document.getElementById('newProjectInitialTasks').value = '';
       }
 
-      function resetTimer() {
-        stopTimer();
-        appState.timerSeconds = 45 * 60;
+      playChime();
+      closeAddModal();
+      saveState();
+      renderAll();
+    }
+
+    // TASK DRILL-DOWN & SUBTASKS MODAL
+    function openTaskDetail(taskId) {
+      playTick();
+      activeTaskDetailId = taskId;
+      const task = appState.tasks.find(t => t.id === taskId);
+      if (!task) return;
+
+      document.getElementById('detailTaskTitle').textContent = task.title;
+
+      // Project tag
+      const project = appState.projects.find(p => String(p.id) === String(task.projectId));
+      document.getElementById('detailProjectName').textContent = project ? project.name : 'General Operations';
+
+      // Priority badge
+      const pBadge = document.getElementById('detailPriorityBadge');
+      const prio = task.priority || 'medium';
+      pBadge.textContent = `${prio.toUpperCase()} PRIORITY`;
+      if (prio === 'critical') pBadge.className = 'px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-red-500/15 text-red-400 border border-red-500/30';
+      else if (prio === 'high') pBadge.className = 'px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-amber-500/15 text-amber-300 border border-amber-500/30';
+      else pBadge.className = 'px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-gold/10 text-gold border border-gold/30';
+
+      renderDetailSubtasks();
+      document.getElementById('taskDetailModal').classList.remove('hidden');
+    }
+
+    function closeTaskDetail() {
+      playTick();
+      activeTaskDetailId = null;
+      document.getElementById('taskDetailModal').classList.add('hidden');
+    }
+
+    function renderDetailSubtasks() {
+      if (!activeTaskDetailId) return;
+      const task = appState.tasks.find(t => t.id === activeTaskDetailId);
+      if (!task) return;
+
+      const subtasks = task.subtasks || [];
+      const total = subtasks.length;
+      const done = subtasks.filter(s => s.completed).length;
+      document.getElementById('subtaskProgressRatio').textContent = `${done} / ${total} Cleared`;
+
+      const list = document.getElementById('detailSubtasksList');
+      if (total === 0) {
+        list.innerHTML = `<div class="text-xs text-gray-500 py-3 text-center border border-dashed border-white/10 rounded-xl">No subtasks yet. Add step-by-step checklist below.</div>`;
+      } else {
+        list.innerHTML = subtasks.map(sub => `
+          <div class="flex items-center justify-between p-2.5 rounded-xl bg-surface-bright/50 border border-white/5">
+            <label class="flex items-center gap-2.5 flex-1 cursor-pointer">
+              <input type="checkbox" ${sub.completed ? 'checked' : ''} onchange="toggleSubtask(${sub.id})" class="accent-[#d4af37] w-4 h-4 rounded">
+              <span class="text-xs ${sub.completed ? 'line-through text-gray-500' : 'text-gray-200'}">${sub.text}</span>
+            </label>
+            <button onclick="deleteSubtask(${sub.id})" class="text-gray-500 hover:text-red-400 text-xs px-2">✕</button>
+          </div>
+        `).join('');
+      }
+    }
+
+    function addSubtaskToActiveTask() {
+      if (!activeTaskDetailId) return;
+      const input = document.getElementById('newSubtaskInput');
+      const text = input.value.trim();
+      if (!text) return;
+      const task = appState.tasks.find(t => t.id === activeTaskDetailId);
+      if (!task) return;
+
+      if (!task.subtasks) task.subtasks = [];
+      task.subtasks.push({ id: Date.now(), text, completed: false });
+      input.value = '';
+      playTick();
+      saveState();
+      renderDetailSubtasks();
+      renderAll();
+    }
+
+    function toggleSubtask(subId) {
+      if (!activeTaskDetailId) return;
+      const task = appState.tasks.find(t => t.id === activeTaskDetailId);
+      if (!task || !task.subtasks) return;
+      task.subtasks = task.subtasks.map(s => s.id === subId ? { ...s, completed: !s.completed } : s);
+      playTick();
+      saveState();
+      renderDetailSubtasks();
+      renderAll();
+    }
+
+    function deleteSubtask(subId) {
+      if (!activeTaskDetailId) return;
+      const task = appState.tasks.find(t => t.id === activeTaskDetailId);
+      if (!task || !task.subtasks) return;
+      task.subtasks = task.subtasks.filter(s => s.id !== subId);
+      playTick();
+      saveState();
+      renderDetailSubtasks();
+      renderAll();
+    }
+
+    function deleteActiveTask() {
+      if (!activeTaskDetailId) return;
+      appState.tasks = appState.tasks.filter(t => t.id !== activeTaskDetailId);
+      closeTaskDetail();
+      playTick();
+      saveState();
+      renderAll();
+    }
+
+    function toggleTask(id, e) {
+      if (e) e.stopPropagation();
+      playTick();
+      appState.tasks = appState.tasks.map(t => t.id === id ? { ...t, completed: !t.completed } : t);
+      saveState();
+      renderAll();
+    }
+
+    function deleteTask(id, e) {
+      if (e) e.stopPropagation();
+      playTick();
+      appState.tasks = appState.tasks.filter(t => t.id !== id);
+      saveState();
+      renderAll();
+    }
+
+    function deleteProject(id, e) {
+      if (e) e.stopPropagation();
+      if (confirm('Delete this project? Associated tasks will remain in general tasks.')) {
+        playTick();
+        appState.projects = appState.projects.filter(p => p.id !== id);
+        // Unlink tasks
+        appState.tasks = appState.tasks.map(t => String(t.projectId) === String(id) ? { ...t, projectId: null } : t);
         saveState();
-        renderTimer();
-      }
-
-      function renderSettingsForm() {
-        document.getElementById('userNameInput').value = appState.user.name || '';
-        document.getElementById('userTitleInput').value = appState.user.title || 'Executive Command Center';
-      }
-
-      function renderAll() {
-        renderGreeting();
-        renderSettingsForm();
-        renderTasks();
-        renderPipeline();
-        renderTimer();
-
-        const totalTasks = appState.tasks.length;
-        const completedTasks = appState.tasks.filter(task => task.completed).length;
-        document.getElementById('taskCount').textContent = `${completedTasks} / ${totalTasks}`;
-
-        const totalValue = appState.deals.reduce((sum, deal) => sum + (Number(deal.value) || 0), 0);
-        const millionValue = totalValue / 1000000;
-        document.getElementById('pipelineValue').textContent = `$${millionValue.toFixed(1)}M`;
-      }
-
-      function registerServiceWorker() {
-        if ('serviceWorker' in navigator) {
-          navigator.serviceWorker.register('./sw.js').catch(() => {});
-        }
-      }
-
-      document.addEventListener('DOMContentLoaded', () => {
         renderAll();
-        registerServiceWorker();
+      }
+    }
 
-        document.querySelectorAll('.nav button').forEach(button => {
-          button.addEventListener('click', () => switchTab(button.dataset.tab));
-        });
+    function handleSearch(val) {
+      appState.searchQuery = val.trim().toLowerCase();
+      renderTasks();
+    }
 
-        document.getElementById('toggleTimerBtn').addEventListener('click', () => {
-          if (appState.timerRunning) {
-            stopTimer();
-          } else {
-            startTimer();
-          }
-        });
+    // RESET ALL
+    function resetAllData() {
+      if (confirm('Clear all custom projects, tasks, and stored settings?')) {
+        localStorage.removeItem('omniflow_exec_state');
+        appState = { ...defaultState };
+        saveState();
+        renderAll();
+        alert('✓ OmniFlow reset to initial state.');
+        switchTab('overview');
+      }
+    }
 
-        document.getElementById('resetTimerBtn').addEventListener('click', resetTimer);
-        document.getElementById('openTaskModalBtn').addEventListener('click', () => openModal('task'));
-        document.getElementById('openDealModalBtn').addEventListener('click', () => openModal('deal'));
-        document.getElementById('closeAddModalBtn').addEventListener('click', closeModal);
-        document.getElementById('cancelAddBtn').addEventListener('click', closeModal);
-        document.getElementById('submitModalBtn').addEventListener('click', submitModal);
-        document.getElementById('saveProfileBtn').addEventListener('click', saveProfile);
+    // RENDER FUNCTIONS
+    function renderOverview() {
+      const name = appState.user.name?.trim();
+      const title = appState.user.title?.trim() || 'Executive Command Center';
+      const initials = name ? name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() : 'OF';
 
-        document.getElementById('closeTaskDetailBtn').addEventListener('click', closeTaskDetail);
-        document.getElementById('closeTaskDetailBtnBottom').addEventListener('click', closeTaskDetail);
-        document.getElementById('addSubtaskBtn').addEventListener('click', toggleAddSubtask);
-        document.getElementById('saveSubtaskBtn').addEventListener('click', saveSubtask);
-        document.getElementById('deleteTaskDetailBtn').addEventListener('click', () => {
-          if (currentTaskDetailId) {
-            deleteTask(currentTaskDetailId);
-            closeTaskDetail();
-          }
-        });
+      document.getElementById('userAvatarInitials').textContent = initials;
+      document.getElementById('headerSubtitle').textContent = title;
 
-        document.getElementById('taskSearchInput').addEventListener('input', (event) => {
-          appState.searchQuery = event.target.value;
-          renderTasks();
-        });
+      if (name) {
+        document.getElementById('greetingHeading').textContent = `Good day, ${name}`;
+        document.getElementById('greetingSub').textContent = title;
+        document.getElementById('cycleStatus').textContent = 'Live Session';
+      } else {
+        document.getElementById('greetingHeading').textContent = 'Welcome to OmniFlow';
+        document.getElementById('greetingSub').textContent = 'Enter your name in Settings to personalize your command center.';
+        document.getElementById('cycleStatus').textContent = 'Executive Suite';
+      }
 
-        document.getElementById('newSubtaskInput').addEventListener('keypress', (e) => {
-          if (e.key === 'Enter') saveSubtask();
-        });
+      // Metrics
+      const totalProjects = appState.projects.length;
+      const totalTasks = appState.tasks.length;
+      const clearedTasks = appState.tasks.filter(t => t.completed).length;
+
+      document.getElementById('overviewProjectCount').textContent = totalProjects;
+      document.getElementById('overviewProjectSubtitle').textContent = `${totalTasks} Tasks Tracked`;
+      document.getElementById('overviewTaskRatio').textContent = `${clearedTasks} / ${totalTasks}`;
+
+      const pct = totalTasks > 0 ? Math.round((clearedTasks / totalTasks) * 100) : 0;
+      document.getElementById('overviewTaskPercent').textContent = `${pct}% Cleared`;
+
+      // Home Checklist Preview (top 3)
+      const checklistContainer = document.getElementById('homeChecklistContainer');
+      if (appState.tasks.length === 0) {
+        checklistContainer.innerHTML = `
+          <div class="text-center py-4 text-xs text-gray-500 border border-dashed border-white/10 rounded-xl">
+            No tasks currently tracked.<br>
+            <button onclick="openAddModal('task')" class="text-gold mt-1.5 font-semibold hover:underline">+ Add your first task</button>
+          </div>`;
+      } else {
+        checklistContainer.innerHTML = appState.tasks.slice(0, 4).map(task => {
+          const subCount = (task.subtasks || []).length;
+          const subDone = (task.subtasks || []).filter(s => s.completed).length;
+          const subBadge = subCount > 0 ? `<span class="text-[10px] text-gold font-medium">${subDone}/${subCount} subtasks</span>` : '';
+          return `
+            <div onclick="openTaskDetail(${task.id})" class="flex items-center justify-between p-2.5 rounded-xl bg-surface-bright/50 border border-white/5 cursor-pointer hover:border-gold/30 transition">
+              <label class="flex items-center gap-2.5 flex-1 cursor-pointer" onclick="event.stopPropagation()">
+                <input type="checkbox" ${task.completed ? 'checked' : ''} onchange="toggleTask(${task.id}, event)" class="accent-[#d4af37] w-4 h-4 rounded">
+                <div class="flex-1">
+                  <span class="text-xs ${task.completed ? 'line-through text-gray-500' : 'text-gray-200'} font-medium block">${task.title}</span>
+                  ${subBadge}
+                </div>
+              </label>
+              <span class="material-symbols-outlined text-gray-500 text-[16px]">chevron_right</span>
+            </div>`;
+        }).join('');
+      }
+
+      // Top Project Highlight
+      const projectHighlight = document.getElementById('homeProjectHighlight');
+      if (appState.projects.length === 0) {
+        projectHighlight.innerHTML = `
+          <div class="text-center py-4 text-xs text-gray-500">
+            No active projects registered yet.
+            <div class="mt-2">
+              <button onclick="openAddModal('project')" class="px-3 py-1.5 bg-surface-bright border border-gold/40 text-gold rounded-lg font-bold text-[11px] active:scale-95">
+                + Register First Project
+              </button>
+            </div>
+          </div>`;
+      } else {
+        const p = appState.projects[0];
+        const pTasks = appState.tasks.filter(t => String(t.projectId) === String(p.id));
+        const pCleared = pTasks.filter(t => t.completed).length;
+        projectHighlight.innerHTML = `
+          <div class="space-y-2">
+            <h3 class="text-base font-bold text-white">${p.name}</h3>
+            <p class="text-xs text-gray-400">${p.description}</p>
+            <div class="flex items-center justify-between text-xs pt-1">
+              <span class="text-gold font-bold">${pCleared} / ${pTasks.length} Tasks Complete</span>
+              <button onclick="switchTab('projects')" class="text-[11px] text-gold font-bold hover:underline flex items-center gap-0.5">
+                Open Terminal <span class="material-symbols-outlined text-[14px]">arrow_forward</span>
+              </button>
+            </div>
+          </div>`;
+      }
+    }
+
+    function renderTasks() {
+      const q = appState.searchQuery;
+      const filtered = appState.tasks.filter(t => {
+        if (!q) return true;
+        const project = appState.projects.find(p => String(p.id) === String(t.projectId));
+        const pName = project ? project.name.toLowerCase() : '';
+        return t.title.toLowerCase().includes(q) || (t.priority || '').toLowerCase().includes(q) || pName.includes(q);
       });
-    </script>
-  </body>
+
+      document.getElementById('tasksTabCount').textContent = `${appState.tasks.length} Items`;
+      const list = document.getElementById('fullTaskList');
+
+      if (filtered.length === 0) {
+        list.innerHTML = `<div class="text-center py-6 text-xs text-gray-500">No tasks match your criteria. Tap "+ New Task" above to add one.</div>`;
+        return;
+      }
+
+      list.innerHTML = filtered.map(task => {
+        const subCount = (task.subtasks || []).length;
+        const subDone = (task.subtasks || []).filter(s => s.completed).length;
+        const subBadge = subCount > 0 ? `<span class="text-[10px] text-gold font-semibold">${subDone}/${subCount} subtasks</span>` : '';
+        const project = appState.projects.find(p => String(p.id) === String(task.projectId));
+        const projectBadge = project ? `<span class="text-[10px] text-gray-400 bg-white/5 px-1.5 py-0.5 rounded">${project.name}</span>` : '';
+
+        return `
+          <div onclick="openTaskDetail(${task.id})" class="flex items-center justify-between p-3 rounded-xl bg-surface-bright/50 border border-white/5 hover:border-gold/30 transition cursor-pointer">
+            <label class="flex items-start gap-3 flex-1 cursor-pointer" onclick="event.stopPropagation()">
+              <input type="checkbox" ${task.completed ? 'checked' : ''} onchange="toggleTask(${task.id}, event)" class="mt-0.5 accent-[#d4af37] w-4 h-4 rounded">
+              <div class="flex-1">
+                <span class="text-xs ${task.completed ? 'line-through text-gray-500' : 'text-gray-200 font-medium'} block">${task.title}</span>
+                <div class="flex items-center gap-2 mt-1">
+                  ${projectBadge}
+                  ${subBadge}
+                </div>
+              </div>
+            </label>
+            <div class="flex items-center gap-1" onclick="event.stopPropagation()">
+              <button onclick="openTaskDetail(${task.id})" title="View Subtasks" class="p-1 text-gray-400 hover:text-gold">
+                <span class="material-symbols-outlined text-[16px]">checklist</span>
+              </button>
+              <button onclick="deleteTask(${task.id}, event)" title="Delete Task" class="p-1 text-gray-500 hover:text-red-400">
+                <span class="material-symbols-outlined text-[16px]">delete</span>
+              </button>
+            </div>
+          </div>`;
+      }).join('');
+    }
+
+    function renderProjects() {
+      const totalProjects = appState.projects.length;
+      document.getElementById('projectsSummaryCount').textContent = totalProjects;
+
+      let totalTasks = 0;
+      let totalSubDone = 0;
+      appState.tasks.forEach(t => {
+        if (t.projectId) totalTasks++;
+        (t.subtasks || []).forEach(s => { if (s.completed) totalSubDone++; });
+      });
+
+      document.getElementById('projectsSummaryTasks').textContent = totalTasks;
+      document.getElementById('projectsCompletedSubtasks').textContent = `${totalSubDone} Subtasks Done`;
+
+      const list = document.getElementById('projectCardsList');
+      if (totalProjects === 0) {
+        list.innerHTML = `
+          <div class="bg-surface-card p-6 rounded-2xl border border-white/10 text-center text-xs text-gray-500">
+            No projects registered yet. Tap "+ New Project" above to create an initiative with tasks and subtasks.
+          </div>`;
+        return;
+      }
+
+      list.innerHTML = appState.projects.map(p => {
+        const tasks = appState.tasks.filter(t => String(t.projectId) === String(p.id));
+        const cleared = tasks.filter(t => t.completed).length;
+
+        return `
+          <div class="bg-surface-card p-4 rounded-2xl border border-gold-border space-y-3">
+            <div class="flex justify-between items-start">
+              <div>
+                <h3 class="text-base font-bold text-white">${p.name}</h3>
+                <p class="text-xs text-gray-400 mt-0.5">${p.description}</p>
+              </div>
+              <button onclick="deleteProject(${p.id}, event)" class="text-gray-500 hover:text-red-400 p-1">
+                <span class="material-symbols-outlined text-[16px]">delete</span>
+              </button>
+            </div>
+
+            <!-- Task Progress Bar -->
+            <div>
+              <div class="flex justify-between text-[11px] mb-1">
+                <span class="text-gray-400">${cleared} of ${tasks.length} Tasks Cleared</span>
+                <span class="text-gold font-bold">${tasks.length > 0 ? Math.round((cleared / tasks.length) * 100) : 0}%</span>
+              </div>
+              <div class="w-full h-1.5 bg-surface-bright rounded-full overflow-hidden">
+                <div class="h-full bg-gold rounded-full" style="width: ${tasks.length > 0 ? (cleared / tasks.length) * 100 : 0}%"></div>
+              </div>
+            </div>
+
+            <!-- Project Task List Preview -->
+            <div class="space-y-1.5 pt-1">
+              ${tasks.length === 0 ? '<div class="text-[11px] text-gray-500">No tasks attached yet.</div>' : tasks.map(t => `
+                <div onclick="openTaskDetail(${t.id})" class="flex items-center justify-between p-2 rounded-lg bg-surface-bright/40 text-xs cursor-pointer hover:bg-surface-bright">
+                  <div class="flex items-center gap-2">
+                    <input type="checkbox" ${t.completed ? 'checked' : ''} onchange="toggleTask(${t.id}, event)" onclick="event.stopPropagation()" class="accent-[#d4af37] w-3.5 h-3.5 rounded">
+                    <span class="${t.completed ? 'line-through text-gray-500' : 'text-gray-300'}">${t.title}</span>
+                  </div>
+                  <span class="text-[10px] text-gold font-medium">${(t.subtasks || []).length} subs</span>
+                </div>
+              `).join('')}
+            </div>
+
+            <!-- Add Task Directly to Project Button -->
+            <button onclick="openAddTaskToProject(${p.id})" class="w-full py-2 bg-surface-bright hover:border-gold/40 border border-white/10 text-gold text-xs font-bold rounded-xl active:scale-95 transition">
+              + Add Task to ${p.name}
+            </button>
+          </div>`;
+      }).join('');
+    }
+
+    function openAddTaskToProject(projectId) {
+      openAddModal('task');
+      document.getElementById('newTaskProjectSelect').value = String(projectId);
+    }
+
+    function renderSettings() {
+      document.getElementById('userNameInput').value = appState.user.name || '';
+      document.getElementById('userTitleInput').value = appState.user.title || 'Executive Command Center';
+      document.getElementById('prefAudioToggle').checked = appState.audioEnabled;
+      updateTimerUI();
+    }
+
+    function renderAll() {
+      renderOverview();
+      renderTasks();
+      renderProjects();
+      renderSettings();
+    }
+
+    // WEB AUDIO API ENGINE
+    let audioCtx = null;
+    function getAudioCtx() {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      return audioCtx;
+    }
+
+    function playChime() {
+      if (!appState.audioEnabled) return;
+      try {
+        const ctx = getAudioCtx();
+        const freqs = [587.33, 880.0, 1174.66]; // D5, A5, D6 warm brass harmonic triad
+        const now = ctx.currentTime;
+        freqs.forEach(f => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(f, now);
+          gain.gain.setValueAtTime(0.08, now);
+          gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.35);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(now);
+          osc.stop(now + 0.4);
+        });
+        if (navigator.vibrate) navigator.vibrate([15, 10, 20]);
+      } catch (e) {}
+    }
+
+    function playTick() {
+      if (!appState.audioEnabled) return;
+      try {
+        const ctx = getAudioCtx();
+        const now = ctx.currentTime;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(2400, now);
+        gain.gain.setValueAtTime(0.04, now);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.02);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.03);
+        if (navigator.vibrate) navigator.vibrate(6);
+      } catch (e) {}
+    }
+
+    // App Initialization
+    window.addEventListener('DOMContentLoaded', () => {
+      renderAll();
+      updateTimerUI();
+    });
+
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW registration:', err));
+      });
+    }
+  </script>
+</body>
 </html>
